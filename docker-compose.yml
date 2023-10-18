@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+  reviewsdegames:
+    image: ${DOCKER_REGISTRY-}reviewsdegames
+    build:
+      context: .
+      dockerfile: ReviewsDeGames/Dockerfile
+    networks:
+      - sql-network
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      SA_PASSWORD: "Admin1234"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    networks:
+      - sql-network
+    
+
+networks: 
+  sql-network:
+    driver: bridge
