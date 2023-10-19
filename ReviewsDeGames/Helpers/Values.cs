@@ -10,7 +10,7 @@ namespace ReviewsDeGames.Helpers
         public const string SqlConnection = "SQLServerConnection";
         public const string SqlConnectionForTests = "SQLServerConnectionTests";
 
-        
+        public const int MaxImageUrlLength = 320;
 
         
 

@@ -8,6 +8,7 @@ using Microsoft.Net.Http.Headers;
 using ReviewsDeGames.Database;
 using ReviewsDeGames.Models;
 using ReviewsDeGames.Repository;
+using ReviewsDeGames.Services;
 
 namespace ReviewsDeGames.Helpers
 {
@@ -54,7 +55,7 @@ namespace ReviewsDeGames.Helpers
         public static IServiceCollection AddGeneralServices(this IServiceCollection services)
         {
             services.AddScoped<DbInit>();
-            //services.AddSingleton<IPasswordHasher, PasswordHasher>();
+            services.AddSingleton<IDescribesService, DescribesService>();
             //services.AddSingleton<IImagesService, ImagesService>();
             //services.AddSingleton<IStringsResources, StringsResources>();
 

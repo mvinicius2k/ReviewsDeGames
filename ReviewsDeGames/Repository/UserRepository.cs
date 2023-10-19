@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ReviewsDeGames.Database;
 using ReviewsDeGames.Helpers;
 using ReviewsDeGames.Models;
+using ReviewsDeGames.Services;
 using System.Net.Mail;
 
 namespace ReviewsDeGames.Repository
@@ -14,17 +15,16 @@ namespace ReviewsDeGames.Repository
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly ReviewGamesContext _context;
+        private readonly IDescribesService _describes;
 
-        public UserRepository(ILogger<UserRepository> logger, UserManager<User> userManager, SignInManager<User> signInManager, ReviewGamesContext context)
+        public UserRepository(ILogger<UserRepository> logger, UserManager<User> userManager, SignInManager<User> signInManager, ReviewGamesContext context, IDescribesService describes)
         {
             _logger = logger;
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
-            
+            _describes = describes;
         }
-
-        
 
         public Task DirectSignIn(User user, bool isPersistent = false)
             => _signInManager.SignInAsync(user, isPersistent);
@@ -34,7 +34,7 @@ namespace ReviewsDeGames.Repository
 
         public async Task<User> PatchAvatar(string userId, string? imagePath)
         {
-            var user = _context.Users.Find(userId) ?? throw new KeyNotFoundException(Messages.Get(Message.KeyNotFound, userId));
+            var user = _context.Users.Find(userId) ?? throw new KeyNotFoundException(_describes.KeyNotFound(userId));
 
             user.AvatarUrl = imagePath;
             await _context.SaveChangesAsync();
@@ -67,8 +67,7 @@ namespace ReviewsDeGames.Repository
 
         public Task HardUpdate(string id, User model)
         {
-            var user = _context.Users.AsNoTracking().FirstOrDefault(u => id == u.Id) ?? throw new KeyNotFoundException(Messages.Get(Message.KeyNotFound, id));
-            model.Id = user.Id;
+            var user = _context.Users.AsNoTracking().FirstOrDefault(u => id == u.Id) ?? throw new KeyNotFoundException(_describes.KeyNotFound(id));
             _context.Users.Update(model);
             return _context.SaveChangesAsync();
         }
@@ -76,7 +75,7 @@ namespace ReviewsDeGames.Repository
         public Task<IdentityResult> UpdatePassword(string id, string currentPassword, string newPassword)
         {
 
-            var user = _context.Users.Find(id) ?? throw new KeyNotFoundException(Messages.Get(Message.KeyNotFound, id));
+            var user = _context.Users.Find(id) ?? throw new KeyNotFoundException(_describes.KeyNotFound(id));
             return _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
 
         }

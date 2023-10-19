@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.OData.Query;
 using ReviewsDeGames.Helpers;
 using ReviewsDeGames.Models;
 using ReviewsDeGames.Repository;
+using ReviewsDeGames.Validators;
 
 namespace ReviewsDeGames.Controllers
 {
@@ -49,7 +50,9 @@ namespace ReviewsDeGames.Controllers
         [HttpPost, Route(ActionRegister)]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto dto, [FromHeader] string password)
         {
-            var validation = await _validator.ValidateAsync(dto);
+
+            var rulesets = new string[] { UserValidator.AddNewRuleSet, "default"};
+            var validation = await _validator.ValidateAsync(dto, opt => opt.IncludeRuleSets(rulesets));
             if (!validation.IsValid)
             {
                 
