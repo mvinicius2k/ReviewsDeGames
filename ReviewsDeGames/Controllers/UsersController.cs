@@ -22,6 +22,7 @@ namespace ReviewsDeGames.Controllers
         public const string ActionPatchInfos = "patchInfos";
         public const string ActionGet = "get";
 
+        public const string PostRegisterPassHeader = "pass";
         public const string PatchAvatarIdHeader = "Id";
         public const string PatchAvatarUrlHeader = "Avatar-Url";
         public const string PatchPasswordUserIdHeader = "User-Id";
@@ -48,7 +49,7 @@ namespace ReviewsDeGames.Controllers
             => _users.GetQuery();
         
         [HttpPost, Route(ActionRegister)]
-        public async Task<IActionResult> Register([FromBody] UserRegisterDto dto, [FromHeader] string password)
+        public async Task<IActionResult> Register([FromBody] UserRegisterDto dto, [FromHeader(Name = PostRegisterPassHeader)] string password)
         {
 
             var rulesets = new string[] { UserValidator.AddNewRuleSet, "default"};
