@@ -8,7 +8,7 @@ namespace ReviewsDeGames.Helpers
         public const int ODataMaxTop = 20;
 
         public const string SqlConnection = "SQLServerConnection";
-        public const string SqlConnectionForTests = "SQLServerConnectionTests";
+        public const string SqlConnectionForTests = "SQLServerTests";
 
         public const int MaxImageUrlLength = 320;
 

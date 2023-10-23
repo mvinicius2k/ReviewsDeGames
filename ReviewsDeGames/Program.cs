@@ -11,8 +11,8 @@ using System.Text.Json.Serialization;
 
 #region Constants
 const bool TrySeed = true;
-const bool RestartDb = false;
-
+const bool RestartDb = true;
+const bool UseTestDb = true;
 #endregion
 
 
@@ -49,7 +49,8 @@ builder.Host.UseSerilog((context, config) =>
 builder.Services
     .AddDbContext<ReviewGamesContext>(options =>
     {
-        var connectionString = builder.Configuration.GetConnectionString(Values.SqlConnection);
+        var jsonKey = UseTestDb ? Values.SqlConnectionForTests : Values.SqlConnection;
+        var connectionString = builder.Configuration.GetConnectionString(jsonKey);
         options.UseSqlServer(connectionString);
     });
 

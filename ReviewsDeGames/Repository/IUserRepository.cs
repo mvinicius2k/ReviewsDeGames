@@ -17,5 +17,6 @@ namespace ReviewsDeGames.Repository
         public Task HardUpdate(string id, User user);
         public ValueTask<bool> VerifyPassword(string userId, string password);
         public IQueryable<User> GetQuery();
+
     }
 }
