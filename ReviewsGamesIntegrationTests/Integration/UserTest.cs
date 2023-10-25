@@ -10,21 +10,23 @@ using ReviewsDeGames.Models;
 using ReviewsGamesIntegrationTests.Fakers;
 using ReviewsGamesIntegrationTests.Fixtures;
 using ReviewsGamesIntegrationTests.Helpers;
+using System.ComponentModel;
 using System.Net;
 using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 
-namespace ReviewsGamesIntegrationTests
+namespace ReviewsGamesTests.Integration
 {
     public class UserData
     {
         public string Password { get; set; }
         public UserResponseDto Dto { get; set; }
 
-      
+
     }
+
 
     public class UserTest : IClassFixture<WebFactory>, IClassFixture<UserFixture>
     {
@@ -56,15 +58,15 @@ namespace ReviewsGamesIntegrationTests
             //Arrange
             var http = _web.Instance.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, EndPoints.UserRegister);
-            
 
-            request.Headers.Add(UsersController.PostRegisterPassHeader,password);
+
+            request.Headers.Add(UsersController.PostRegisterPassHeader, password);
             request.Content = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
             //Act
             var response = await http.SendAsync(request);
 
             //Assert
-            response.StatusCode.Should().Be(HttpStatusCode.Created); 
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         }
 
@@ -111,7 +113,7 @@ namespace ReviewsGamesIntegrationTests
 
         }
 
-        
+
 
         [Fact]
         public async Task PatchInfos_Valid_ShouldReturn200()
@@ -143,7 +145,7 @@ namespace ReviewsGamesIntegrationTests
 
         }
 
-        
+
         [Fact]
         public async Task PatchInfos_Invalid_ShouldFail()
         {
@@ -178,7 +180,7 @@ namespace ReviewsGamesIntegrationTests
             var http = _userFixture.Sections[loggedUser];
             request.Headers.Add(UsersController.PatchPasswordNewPasswordHeader, validPassword);
             request.Headers.Add(UsersController.PatchPasswordCurrentPasswordHeader, loggedUser.Password);
-            
+
             var verifyEndPoint = EndPoints.Resolve<UsersController>(UsersController.ActionVerifyPassword).Placeholder(loggedUser.Dto.Id);
             var verificationRequest = new HttpRequestMessage(HttpMethod.Get, verifyEndPoint);
             verificationRequest.Headers.Add(UsersController.VerifyPasswordPassHeader, validPassword);
@@ -203,7 +205,7 @@ namespace ReviewsGamesIntegrationTests
             var userB = await _userFixture.Create(new UserFaker().Generate(), "algumPass1230", _web);
             var endPoint = EndPoints.Resolve<UsersController>(UsersController.ActionPatchPassword).Placeholder(userB.Dto.Id);
             var request = new HttpRequestMessage(HttpMethod.Patch, endPoint);
-            var http = _userFixture.Sections[userA]; 
+            var http = _userFixture.Sections[userA];
             request.Headers.Add(UsersController.PatchPasswordNewPasswordHeader, "algumaSenha2355");
             request.Headers.Add(UsersController.PatchPasswordCurrentPasswordHeader, userA.Password);
 
@@ -248,13 +250,13 @@ namespace ReviewsGamesIntegrationTests
             var fakerWithBadAvatarUrl = new UserFaker();
             var fakerWithBadNickname = new UserFaker();
 
-            fakerWithBadEmail.RuleFor(u => u.Email, f => f.PickRandom(new string[] 
+            fakerWithBadEmail.RuleFor(u => u.Email, f => f.PickRandom(new string[]
             {
                 "emailruim", "sdfjghflk@", "     ", string.Join("",f.Lorem.Words(300)) + "@gmail.com", "ruim@hotmail.com@hotmail.com", ""
             }));
             fakerWithBadAvatarUrl.RuleFor(u => u.AvatarUrl, f => f.PickRandom(new string[]
             {
-                f.Internet.Email(), f.Internet.UrlWithPath("ftp", fileExt: ".jpg"), f.Internet.UrlRootedPath(), "     ", "", 
+                f.Internet.Email(), f.Internet.UrlWithPath("ftp", fileExt: ".jpg"), f.Internet.UrlRootedPath(), "     ", "",
             }));
             fakerWithBadNickname.RuleFor(u => u.UserName, f => f.PickRandom(new string[]
             {

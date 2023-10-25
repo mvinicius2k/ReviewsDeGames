@@ -12,6 +12,7 @@ namespace ReviewsDeGames.Helpers
 
         public const int MaxImageUrlLength = 320;
 
+        public const string UserImagesFolderName = "userImages";
         
 
         

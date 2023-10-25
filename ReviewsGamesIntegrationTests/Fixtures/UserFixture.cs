@@ -3,6 +3,7 @@ using ReviewsDeGames.Controllers;
 using ReviewsDeGames.Models;
 using ReviewsGamesIntegrationTests.Fakers;
 using ReviewsGamesIntegrationTests.Helpers;
+using ReviewsGamesTests.Integration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace ReviewsGamesIntegrationTests.Fixtures
 {
-    
+
     public class UserFixture
     {
         public Dictionary<UserData, HttpClient> Sections { get; private set; }
