@@ -67,9 +67,11 @@ namespace ReviewsDeGames.Repository
 
         public Task HardUpdate(string id, User model)
         {
-            var user = _context.Users.AsNoTracking().FirstOrDefault(u => id == u.Id) ?? throw new KeyNotFoundException(_describes.KeyNotFound(id));
-            _context.Users.Update(model);
-            return _context.SaveChangesAsync();
+            if(!_context.Users.Any(u => id == u.Id))
+                throw new KeyNotFoundException(_describes.KeyNotFound(id));
+
+            model.Id = id;
+            return _userManager.UpdateAsync(model);
         }
 
         public Task<IdentityResult> UpdatePassword(string id, string currentPassword, string newPassword)
@@ -85,6 +87,12 @@ namespace ReviewsDeGames.Repository
             var user = _context.Users.Find(userId) ?? throw new KeyNotFoundException();
             var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
             return result.Succeeded;
+        }
+
+        public Task<IdentityResult> Delete(string id)
+        {
+            var userToDelete = _context.Users.Find(id) ?? throw new KeyNotFoundException(_describes.KeyNotFound(id));
+            return _userManager.DeleteAsync(userToDelete);
         }
     }
 }

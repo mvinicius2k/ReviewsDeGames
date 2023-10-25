@@ -14,7 +14,7 @@ using System.Security.Claims;
 
 namespace ReviewsDeGames.Controllers
 {
-    [ApiController, Route(Route)]
+    [ApiController, Route("[controller]")]
     public class UsersController : ControllerBase
     {
         #region Constants
@@ -27,7 +27,9 @@ namespace ReviewsDeGames.Controllers
         public const string ActionLogout = "logout";
         public const string ActionPatchPassword = $"patchPassword/{{{PatchPasswordUserIdRoute}}}";
         public const string ActionPatchInfos = $"patchInfos/{{{PatchInfosUserIdRoute}}}";
+        public const string ActionVerifyPassword = $"verifyPassword/{{{VerifyPasswordIdRoute}}}";
         public const string ActionGet = "get";
+        public const string ActionDelete = $"delete/{{{DeleteIdRoute}}}";
 
         public const string PostRegisterPassHeader = "pass";
         public const string PatchAvatarIdHeader = "Id";
@@ -36,7 +38,9 @@ namespace ReviewsDeGames.Controllers
         public const string PatchPasswordCurrentPasswordHeader = "Current-Pass";
         public const string PatchPasswordNewPasswordHeader = "New-Pass";
         public const string PatchInfosUserIdRoute = "id";
-
+        public const string VerifyPasswordPassHeader = "password";
+        public const string VerifyPasswordIdRoute = "id";
+        public const string DeleteIdRoute = "id";
 
         #endregion
 
@@ -123,8 +127,10 @@ namespace ReviewsDeGames.Controllers
         }
 
         [HttpPatch, Route(ActionPatchInfos), Authorize]
-        public async Task<IActionResult> PatchInfos([FromRoute(Name = PatchInfosUserIdRoute)] string id, UserRegisterDto dto)
+        public async Task<IActionResult> PatchInfos([FromRoute(Name = PatchInfosUserIdRoute)] string id,[FromBody] UserRegisterDto dto)
         {
+            var rulesets = new string[] { "default", UserValidator.UpdateRuleSet };
+
             //Verificando se nao está alterando outro user ou um nao existete 
             var userIdRequest = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdRequest != id)
@@ -133,7 +139,7 @@ namespace ReviewsDeGames.Controllers
                 return NotFound(_describes.KeyNotFound(id));
 
             //Validando entrada
-            var validation = await _validator.ValidateAsync(dto, opt => opt.IncludeRuleSets(UserValidator.UpdateRuleSet));
+            var validation = await _validator.ValidateAsync(dto, opt => opt.IncludeRuleSets(rulesets));
             if (!validation.IsValid)
             {
                 validation.AddToModelState(ModelState);
@@ -144,13 +150,13 @@ namespace ReviewsDeGames.Controllers
             var user = _users.GetQuery().AsNoTracking().First(u => u.Id == id);
 
             //Aplicando patch
-            user = _mapper.Map<UserRegisterDto, User>(dto);
+            user = _mapper.Map<UserRegisterDto, User>(dto, user);
             await _users.HardUpdate(id, user);
             var response = _mapper.Map<User, UserResponseDto>(user);
             return Ok(response);
         }
-        [HttpPatch, Route(ActionPatchPassword), Authorize]
         
+        [HttpPatch, Route(ActionPatchPassword), Authorize]
         public async Task<IActionResult> PatchPassowrd(
         [FromRoute(Name = PatchPasswordUserIdRoute)] string userId,
         [FromHeader(Name = PatchPasswordCurrentPasswordHeader)] string currentPassword,
@@ -171,6 +177,45 @@ namespace ReviewsDeGames.Controllers
                 ModelState.AddModelError(err.Code, err.Description);
 
             return Unauthorized(ModelState);
+        }
+
+
+        [HttpGet, Route(ActionVerifyPassword)]
+        public async ValueTask<IActionResult> VerifyPassword(
+            [FromRoute(Name = VerifyPasswordIdRoute)] string userId,
+            [FromHeader(Name = VerifyPasswordPassHeader)] string pass)
+        {
+            var result = await _users.VerifyPassword(userId, pass);
+            return Ok(new PasswordVerificationDto { Result = result});
+        }
+
+        [HttpDelete,Route(ActionDelete), Authorize]
+        public async Task<IActionResult> Delete([FromRoute(Name = DeleteIdRoute)] string id)
+        {
+            //Verificando se nao está alterando outro user
+            var userIdRequest = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdRequest != id)
+                return Unauthorized();
+
+            try
+            {
+                var result = await _users.Delete(id);
+                if (!result.Succeeded)
+                {
+                    foreach (var err in result.Errors)
+                        ModelState.AddModelError(err.Code, err.Description);
+                    
+                    return BadRequest(ModelState);
+                }
+
+                return Ok();
+            }
+            catch (KeyNotFoundException)
+            {
+                ModelState.AddModelError(nameof(_describes.KeyNotFound), _describes.KeyNotFound(id));
+                return NotFound(ModelState);
+                
+            }
         }
 
     }

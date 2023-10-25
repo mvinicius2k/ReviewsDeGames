@@ -1,26 +1,27 @@
-﻿using Azure.Core;
+﻿//Usar testes em paralelo pode ocasionar em erros
+
+
 using Bogus;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using ReviewsDeGames.Controllers;
+using ReviewsDeGames.Helpers;
 using ReviewsDeGames.Models;
 using ReviewsGamesIntegrationTests.Fakers;
 using ReviewsGamesIntegrationTests.Fixtures;
 using ReviewsGamesIntegrationTests.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace ReviewsGamesIntegrationTests
 {
-    public record UserData
+    public class UserData
     {
-        public string Password { get; init; }
-        public UserResponseDto Dto { get; init; }
+        public string Password { get; set; }
+        public UserResponseDto Dto { get; set; }
 
       
     }
@@ -45,7 +46,7 @@ namespace ReviewsGamesIntegrationTests
             var http = _web.Instance.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, EndPoints.UserGetAll);
             var response = await http.SendAsync(request);
-            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
 
@@ -80,7 +81,7 @@ namespace ReviewsGamesIntegrationTests
             var response = await http.SendAsync(request);
 
             //Assert
-            response.StatusCode.Should().NotBe(HttpStatusCode.Created);
+            response.StatusCode.Should().BeOneOf(HttpStatusCode.UnprocessableEntity, HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -105,41 +106,130 @@ namespace ReviewsGamesIntegrationTests
 
             //Assert
             responseSucess.StatusCode.Should().Be(HttpStatusCode.Created);
-            responseFail.StatusCode.Should().NotBe(HttpStatusCode.Created);
+            responseFail.StatusCode.Should().BeOneOf(HttpStatusCode.UnprocessableEntity, HttpStatusCode.BadRequest);
 
 
         }
 
+        
 
-        [Fact]
-        public async Task PatchInfos_Invalid_ShouldFail()
-        {
-
-        }
         [Fact]
         public async Task PatchInfos_Valid_ShouldReturn200()
         {
+            //Arrange
+            //Obtendo usuário logado
+            UserData loggedUser = await _userFixture.GetOrCreate(_web) ?? throw new Exception("Falha ao obter user");
+            var http = _userFixture.Sections[loggedUser];
+            var newInfos = new UserRegisterDto
+            {
+                AvatarUrl = string.Empty,
+                Email = "meu-email@gmail.com",
+                UserName = "Um.novo.nick"
+            };
+            var oldInfos = loggedUser.Dto;
+            var endPoint = EndPoints.Resolve<UsersController>(UsersController.ActionPatchInfos).Placeholder(loggedUser.Dto.Id);
+            var request = new HttpRequestMessage(HttpMethod.Patch, endPoint);
+            request.Content = new StringContent(JsonSerializer.Serialize(newInfos), Encoding.UTF8, MediaTypeNames.Application.Json);
 
+            //Act
+            var response = await http.SendAsync(request);
+
+            //Assert
+            response.Should().NotBeNull();
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var responseUser = await response.Content.ReadFromJsonAsync<UserResponseDto>();
+            responseUser.Should().NotBeEquivalentTo(oldInfos);
+
+        }
+
+        
+        [Fact]
+        public async Task PatchInfos_Invalid_ShouldFail()
+        {
+            //Arrange
+            var loggedUser = await _userFixture.GetOrCreate(_web) ?? throw new Exception("Falha ao obter user");
+            var http = _userFixture.Sections[loggedUser];
+            var newInfos = new UserRegisterDto
+            {
+                AvatarUrl = "localhost",
+                Email = "emailruim#gmail,com",
+                UserName = "   "
+            };
+            var endPoint = EndPoints.Resolve<UsersController>(UsersController.ActionPatchInfos).Placeholder(loggedUser.Dto.Id);
+            var request = new HttpRequestMessage(HttpMethod.Patch, endPoint);
+            request.Content = new StringContent(JsonSerializer.Serialize(newInfos), Encoding.UTF8, MediaTypeNames.Application.Json);
+
+            //Act
+            var response = await http.SendAsync(request);
+
+            //Assert
+            response.Should().NotBeNull();
+            response.StatusCode.Should().BeOneOf(HttpStatusCode.UnprocessableEntity, HttpStatusCode.BadRequest);
         }
         [Fact]
         public async Task PatchPassword_Valid_ShouldReturn200()
         {
+            //Arrange
+            var loggedUser = await _userFixture.GetOrCreate(_web) ?? throw new Exception("Sem user");
+            var validPassword = "senhaAceitável455";
+            var endPoint = EndPoints.Resolve<UsersController>(UsersController.ActionPatchPassword).Placeholder(loggedUser.Dto.Id);
+            var request = new HttpRequestMessage(HttpMethod.Patch, endPoint);
+            var http = _userFixture.Sections[loggedUser];
+            request.Headers.Add(UsersController.PatchPasswordNewPasswordHeader, validPassword);
+            request.Headers.Add(UsersController.PatchPasswordCurrentPasswordHeader, loggedUser.Password);
+            
+            var verifyEndPoint = EndPoints.Resolve<UsersController>(UsersController.ActionVerifyPassword).Placeholder(loggedUser.Dto.Id);
+            var verificationRequest = new HttpRequestMessage(HttpMethod.Get, verifyEndPoint);
+            verificationRequest.Headers.Add(UsersController.VerifyPasswordPassHeader, validPassword);
 
+            //Act
+            var response = await http.SendAsync(request);
+            var verificationResponse = await http.SendAsync(verificationRequest);
+
+            //Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            verificationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var verificationResult = await verificationResponse.Content.ReadFromJsonAsync<PasswordVerificationDto>();
+            verificationResult.Result.Should().BeTrue();
+            if (verificationResult.Result)
+                loggedUser.Password = validPassword;
         }
         [Fact]
         public async Task PatchPassword_OtherUser_ShouldFail()
         {
+            //Arrange
+            var userA = await _userFixture.GetOrCreate(_web);
+            var userB = await _userFixture.Create(new UserFaker().Generate(), "algumPass1230", _web);
+            var endPoint = EndPoints.Resolve<UsersController>(UsersController.ActionPatchPassword).Placeholder(userB.Dto.Id);
+            var request = new HttpRequestMessage(HttpMethod.Patch, endPoint);
+            var http = _userFixture.Sections[userA]; 
+            request.Headers.Add(UsersController.PatchPasswordNewPasswordHeader, "algumaSenha2355");
+            request.Headers.Add(UsersController.PatchPasswordCurrentPasswordHeader, userA.Password);
+
+            //Act
+            var response = await http.SendAsync(request);
+
+            //Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
         }
         [Fact]
         public async Task Delete_WithoutRole_ShouldFail()
         {
-
+            //A fazer
         }
         [Fact]
         public async Task Delete_Self_ShouldSucess()
         {
+            var loggedUser = await _userFixture.GetOrCreate(_web);
+            var endPoint = EndPoints.Resolve<UsersController>(UsersController.ActionDelete).Placeholder(loggedUser.Dto.Id);
+            var request = new HttpRequestMessage(HttpMethod.Delete, endPoint);
+            var http = _userFixture.Sections[loggedUser];
 
+            var response = await http.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
         #region MemberData

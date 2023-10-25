@@ -27,6 +27,9 @@ namespace ReviewsDeGames.Models
         public string Email { get; init; }
         public string AvatarUrl { get; init; }
     }
-
+    public record PasswordVerificationDto
+    {
+        public bool Result { get; init; }
+    }
     
 }

@@ -9,6 +9,7 @@ using ReviewsDeGames.Database;
 using ReviewsDeGames.Models;
 using ReviewsDeGames.Repository;
 using ReviewsDeGames.Services;
+using System.Text.RegularExpressions;
 
 namespace ReviewsDeGames.Helpers
 {
@@ -92,6 +93,17 @@ namespace ReviewsDeGames.Helpers
                 Task.Run(() => dbInit.Initialize(seed, restart)).Wait();
 
             }
+        }
+
+        public static string Placeholder(this string str, params string[] args)
+        {
+            var pattern = @"\{([^}]*)\}";
+            var count = 0;
+            var formated = Regex.Replace(str, pattern, match =>
+            {
+                return "{" + count++ + "}";
+            });
+            return string.Format(formated, args);
         }
 
         #endregion

@@ -76,12 +76,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.MapControllers();
 app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 app.AwakeDB(TrySeed, RestartDb);
 
