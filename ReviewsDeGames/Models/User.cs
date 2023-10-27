@@ -11,6 +11,8 @@ namespace ReviewsDeGames.Models
 
         [MaxLength(AvatarMaxLenght)]
         public string? AvatarUrl { get; set; }
+
+        public virtual ICollection<Image> Images { get; set; }
     }
 
     public record UserRegisterDto

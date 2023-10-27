@@ -12,7 +12,8 @@
         public string UnavaliableUserName(object username);
         public string NotEmpty();
         public string FormatNotSupported();
-
+        public string ContentTypeNotSupported(object format);
+        public string MaxSizeOverflowMB(int maxSizeBytesCount);
     }
     public class DescribesService : IDescribesService
     {
@@ -45,5 +46,10 @@
 
         public virtual string UnavaliableUserName(object username)
         => $"O nome de usuário {username} está indisponível";
+        public virtual string ContentTypeNotSupported(object format)
+        => $"O formato {format} não é suportado";
+
+        public virtual string MaxSizeOverflowMB(int maxSizeBytesCount)
+             => $"O arquivo ultrapassou o limite de {maxSizeBytesCount / (1024 * 1024)} MB";
     }
 }

@@ -9,6 +9,10 @@ namespace ReviewsDeGames
         {
             CreateMap<UserRegisterDto, User>();
             CreateMap<User, UserResponseDto>();
+            CreateMap<User, ImageResponseDto>();
+            CreateMap<ImageRequestDto, Image>()
+                .ForMember(dest => dest.FileName, opt => opt.MapFrom(mp => mp.FileName));
+            CreateMap<Image, ImageResponseDto>();
 
 
         }

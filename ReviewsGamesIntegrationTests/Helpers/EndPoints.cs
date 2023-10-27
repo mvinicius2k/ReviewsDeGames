@@ -24,6 +24,7 @@ namespace ReviewsGamesIntegrationTests.Helpers
 
             var routeAttributes = controllerType.GetCustomAttributes<RouteAttribute>();
             var template = routeAttributes.FirstOrDefault()?.Template ?? throw new ArgumentException($"{typeof(T)} não possui rota");
+            
             template = template.Replace("[controller]", controllerType.Name.Replace("Controller", ""));
             return template + "/" + action;
             

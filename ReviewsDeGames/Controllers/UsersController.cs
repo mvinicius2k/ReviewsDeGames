@@ -14,7 +14,7 @@ using System.Security.Claims;
 
 namespace ReviewsDeGames.Controllers
 {
-    [ApiController, Route("[controller]")]
+    [ApiController, Route(Route)]
     public class UsersController : ControllerBase
     {
         #region Constants

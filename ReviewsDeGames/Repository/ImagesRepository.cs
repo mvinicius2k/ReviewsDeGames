@@ -15,7 +15,7 @@ namespace ReviewsDeGames.Repository
 
     public class ImagesRepository : RepositoryBase<Image, int>, IImagesRepository
     {
-        protected ImagesRepository(ReviewGamesContext context, IDescribesService describes) : base(context, describes)
+        public ImagesRepository(ReviewGamesContext context, IDescribesService describes) : base(context, describes)
         {
         }
     }

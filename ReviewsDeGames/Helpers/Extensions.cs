@@ -44,12 +44,14 @@ namespace ReviewsDeGames.Helpers
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IImagesRepository, ImagesRepository>();
 
             return services;
         }
         public static IServiceCollection AddValidations(this IServiceCollection services)
         {
             services.AddValidatorsFromAssemblyContaining<UserRegisterDto>();
+            services.AddValidatorsFromAssemblyContaining<ImageRequestDto>();
             return services;
         }
 
@@ -57,6 +59,7 @@ namespace ReviewsDeGames.Helpers
         {
             services.AddScoped<DbInit>();
             services.AddSingleton<IDescribesService, DescribesService>();
+            services.AddSingleton<IHostImageService, HostImageService>();
             //services.AddSingleton<IImagesService, ImagesService>();
             //services.AddSingleton<IStringsResources, StringsResources>();
 
@@ -104,6 +107,17 @@ namespace ReviewsDeGames.Helpers
                 return "{" + count++ + "}";
             });
             return string.Format(formated, args);
+        }
+
+        /// <summary>
+        /// Converte para uma string base64 segura para urls, sem {/, +, =}
+        /// </summary>
+        public static string ToSafeBase64(this Guid guid)
+        {
+            return Convert.ToBase64String(guid.ToByteArray()).Substring(0, 22)
+                .Replace("+", "_")
+                .Replace("/", ",")
+                .Replace("=", "");
         }
 
         #endregion

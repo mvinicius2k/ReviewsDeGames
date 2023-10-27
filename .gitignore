@@ -1,6 +1,10 @@
 bin
 obj
-ForumK/bin
-ForumK/obj
-ForumK/logs
+ReviewsDeGames/bin
+ReviewsDeGames/obj
+ReviewsDeGames/logs
+ReviewsGamesIntegrationTests/bin
+ReviewsGamesIntegrationTests/obj
+ReviewsGamesIntegrationTests/logs
+
 .vs
