@@ -50,8 +50,8 @@ namespace ReviewsGamesTests.Fixtures
             while(Images.Count < count)
             {
                 var imageUrl = faker.Image.PicsumUrl(Width, Height);
-                var savePath = Path.Combine(ImageFolder, faker.Random.Guid().ToSafeBase64() + ".jpg");
-                var result = await WebUtils.TryDownloadImage(imageUrl, savePath);
+                var savePath = Path.Combine(ImageFolder, $"{faker.Lorem.Word()}-{Images.Count}.jpg");
+                var result = await HttpUtils.TryDownloadImage(imageUrl, savePath);
                 if (result)
                 {
                     attemps = 0;
