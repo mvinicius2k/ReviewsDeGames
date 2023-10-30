@@ -5,7 +5,7 @@ namespace ReviewsDeGames.Models
 {
     public class Image : IModel<int>
     {
-        public const int FilenameMaxLength = 200;
+        public const int FilenameMaxLength = 350;
         public int Id { get; set; }
         [MaxLength(FilenameMaxLength)]
         public string FileName { get; set; }
@@ -21,7 +21,7 @@ namespace ReviewsDeGames.Models
             => Id;
 
       
-        public int SetId(int value)
+        public void SetId(int value)
             => Id = value;
     }
 

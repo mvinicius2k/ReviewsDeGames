@@ -13,6 +13,8 @@ namespace ReviewsDeGames.Models
         public string? AvatarUrl { get; set; }
 
         public virtual ICollection<Image> Images { get; set; }
+        public virtual ICollection<UserVote> Votes { get; set; }    
+        public virtual ICollection<Post> Posts { get; set; }    
     }
 
     public record UserRegisterDto

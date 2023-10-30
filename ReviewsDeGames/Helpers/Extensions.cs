@@ -9,6 +9,7 @@ using ReviewsDeGames.Database;
 using ReviewsDeGames.Models;
 using ReviewsDeGames.Repository;
 using ReviewsDeGames.Services;
+using System.Security.Policy;
 using System.Text.RegularExpressions;
 
 namespace ReviewsDeGames.Helpers
@@ -45,6 +46,7 @@ namespace ReviewsDeGames.Helpers
         {
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IImagesRepository, ImagesRepository>();
+            services.AddScoped<IPostRepository, PostRepository>();
 
             return services;
         }
@@ -52,6 +54,7 @@ namespace ReviewsDeGames.Helpers
         {
             services.AddValidatorsFromAssemblyContaining<UserRegisterDto>();
             services.AddValidatorsFromAssemblyContaining<ImageRequestDto>();
+            services.AddValidatorsFromAssemblyContaining<PostRequestDto>();
             return services;
         }
 
@@ -60,8 +63,6 @@ namespace ReviewsDeGames.Helpers
             services.AddScoped<DbInit>();
             services.AddSingleton<IDescribesService, DescribesService>();
             services.AddSingleton<IHostImageService, HostImageService>();
-            //services.AddSingleton<IImagesService, ImagesService>();
-            //services.AddSingleton<IStringsResources, StringsResources>();
 
             return services;
         }
@@ -123,6 +124,23 @@ namespace ReviewsDeGames.Helpers
         #endregion
 
         #region Libs
+        
+        public static IRuleBuilderOptions<T, string> SupportedImageUrl<T>(this IRuleBuilder<T, string> ruleBuilder, IEnumerable<string> supportedExtensions)
+        {
+            return ruleBuilder.Must(url =>
+            {
+                url = url.Trim().ToLower();
+                var validHttp = false;
+                if(url.StartsWith("http://") || url.StartsWith("https://"))
+                    validHttp = Uri.IsWellFormedUriString(url, UriKind.Absolute);
+                else
+                    validHttp = Uri.IsWellFormedUriString(url, UriKind.Relative);
+
+
+                return validHttp && supportedExtensions.Contains(Path.GetExtension(url));
+            });
+
+        }
         public static void AddToModelState(this ValidationResult result, ModelStateDictionary modelState)
         {
             foreach (var error in result.Errors)

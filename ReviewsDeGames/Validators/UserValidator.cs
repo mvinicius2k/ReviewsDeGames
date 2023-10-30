@@ -13,7 +13,6 @@ namespace ReviewsDeGames.Validators
         public const string UpdateRuleSet = "update";
         public const string AddNewRuleSet = "new";
         private readonly IUserRepository _users;
-        public static readonly string[] SupportedImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg" };
 
         private bool IsUniqueOrSameUsername(string nick)
         {
@@ -28,12 +27,7 @@ namespace ReviewsDeGames.Validators
             return users == null || email.ToUpper() == users.NormalizedEmail;
         }
 
-        private bool IsValidImageUrl(string url)
-        {
-            return Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute)
-                && SupportedImageExtensions.Contains(Path.GetExtension(url));
-        }
-
+       
         public UserValidator(IUserRepository users, IDescribesService describes)
         {
             _users = users;
@@ -76,8 +70,8 @@ namespace ReviewsDeGames.Validators
             RuleFor(u => u.AvatarUrl)
                 .MaximumLength(Values.MaxImageUrlLength)
                 .WithMessage(describes.MaxLength(Values.MaxImageUrlLength))
-                .Must(url => string.IsNullOrEmpty(url) || IsValidImageUrl(url))
-                .WithMessage(describes.FormatNotSupported());
+                .SupportedImageUrl(Values.SupportedImageExtensions)
+                .WithMessage(describes.FormatNotSupported(Values.SupportedImageExtensions));
                 
 
 

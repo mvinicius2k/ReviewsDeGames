@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 #region Constants
 const bool TrySeed = true;
 const bool RestartDb = true;
-const bool UseTestDb = true;
+const bool UseTestDb = false;
 #endregion
 
 

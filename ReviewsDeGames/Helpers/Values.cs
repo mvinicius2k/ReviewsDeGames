@@ -11,14 +11,20 @@ namespace ReviewsDeGames.Helpers
         public const string SqlConnectionForTests = "SQLServerTests";
 
         public const int MaxImageUrlLength = 320;
+        public const int IdentityIdMaxLength = 450;
 
         public const string UserImagesFolderName = "userImages";
-        
 
         
-        
-      
+        public static readonly string[] SupportedImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg" };
+
+        public const string RoleAdmin = "admin";
+
+
+
+
+
     }
 
-    
+
 }
