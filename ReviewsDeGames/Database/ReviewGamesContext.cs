@@ -18,6 +18,14 @@ namespace ReviewsDeGames.Database
         {
             base.OnModelCreating(builder);
             builder.Entity<Image>()
+                .HasOne(i => i.UsedByAvatar)
+                .WithOne(u => u.Avatar)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Image>()
+                .HasOne(i => i.UsedByPostAsFeatured)
+                .WithOne(u => u.FeaturedImage)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Image>()
                 .HasOne(i => i.Owner)
                 .WithMany(i => i.Images);
             builder.Entity<Post>()

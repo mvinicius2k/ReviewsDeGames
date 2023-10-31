@@ -18,4 +18,10 @@
             PostId = value.post;
         }
     }
+
+    public record UserVoteRequestDto
+    {
+        public int PostId { get; init; }
+        public int Value { get; init; }
+    }
 }

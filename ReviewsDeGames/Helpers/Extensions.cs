@@ -136,7 +136,9 @@ namespace ReviewsDeGames.Helpers
                 else
                     validHttp = Uri.IsWellFormedUriString(url, UriKind.Relative);
 
+                
 
+                
                 return validHttp && supportedExtensions.Contains(Path.GetExtension(url));
             });
 

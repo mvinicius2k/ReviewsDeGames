@@ -28,7 +28,7 @@ namespace ReviewsDeGames.Validators
         }
 
        
-        public UserValidator(IUserRepository users, IDescribesService describes)
+        public UserValidator(IUserRepository users, IDescribesService describes, IImagesRepository images)
         {
             _users = users;
 
@@ -67,11 +67,10 @@ namespace ReviewsDeGames.Validators
             .EmailAddress()
                 .WithMessage(describes.InvalidEmail());
 
-            RuleFor(u => u.AvatarUrl)
-                .MaximumLength(Values.MaxImageUrlLength)
-                .WithMessage(describes.MaxLength(Values.MaxImageUrlLength))
-                .SupportedImageUrl(Values.SupportedImageExtensions)
-                .WithMessage(describes.FormatNotSupported(Values.SupportedImageExtensions));
+
+            RuleFor(u => u.AvatarId)
+                .MustAsync(async (avtId, _) => (await images.GetById(avtId.Value)) != null).When(u => u.AvatarId != null)
+                .WithMessage(u => describes.EntityNotFound(nameof(Image), u.AvatarId));
                 
 
 

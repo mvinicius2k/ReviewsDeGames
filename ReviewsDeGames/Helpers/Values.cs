@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using MimeMapping;
 
 namespace ReviewsDeGames.Helpers
 {
@@ -15,8 +16,20 @@ namespace ReviewsDeGames.Helpers
 
         public const string UserImagesFolderName = "userImages";
 
-        
-        public static readonly string[] SupportedImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg" };
+
+        public readonly static string[] SupportedMime = new string[] {
+            MimeMapping.KnownMimeTypes.Jpg,
+            MimeMapping.KnownMimeTypes.Png,
+            MimeMapping.KnownMimeTypes.Jpeg,
+            MimeMapping.KnownMimeTypes.Gif,
+            MimeMapping.KnownMimeTypes.Tiff,
+            MimeMapping.KnownMimeTypes.Webp,
+
+        };
+        public static readonly string[] SupportedExtensions = SupportedMime
+            .Select(m => MimeUtility.GetExtensions(m))
+            .SelectMany(i => i.Select(ex => "." + ex))
+            .ToArray();
 
         public const string RoleAdmin = "admin";
 

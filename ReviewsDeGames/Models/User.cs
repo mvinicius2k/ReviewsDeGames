@@ -7,11 +7,10 @@ namespace ReviewsDeGames.Models
     {
         public const int UsernameMaxLenght = 150;
         
-        public const int AvatarMaxLenght = 150;
 
-        [MaxLength(AvatarMaxLenght)]
-        public string? AvatarUrl { get; set; }
+        public int? AvatarId { get; set; }
 
+        public virtual Image Avatar { get; set; }
         public virtual ICollection<Image> Images { get; set; }
         public virtual ICollection<UserVote> Votes { get; set; }    
         public virtual ICollection<Post> Posts { get; set; }    
@@ -21,7 +20,7 @@ namespace ReviewsDeGames.Models
     {
         public string UserName { get; init; }
         public string Email { get; init; }
-        public string AvatarUrl { get; init; }
+        public int? AvatarId { get; init; }
     }
 
     public record UserResponseDto
@@ -29,7 +28,7 @@ namespace ReviewsDeGames.Models
         public string Id { get; init; }
         public string UserName { get; init;}
         public string Email { get; init; }
-        public string AvatarUrl { get; init; }
+        public int? AvatarId { get; init; }
     }
     public record PasswordVerificationDto
     {

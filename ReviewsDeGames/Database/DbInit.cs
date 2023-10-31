@@ -12,7 +12,7 @@ namespace ReviewsDeGames.Database
         private static readonly User AdminUser = new User
         {
             Email = "admin@email.com",
-            AvatarUrl = null,
+            AvatarId = null,
             UserName = "Admin",
         };
         private static readonly string AdminPassword = "Admin1234";

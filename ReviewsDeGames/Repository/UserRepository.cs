@@ -34,11 +34,11 @@ namespace ReviewsDeGames.Repository
         public IQueryable<User> GetQuery()
             => _context.Users.AsQueryable();
 
-        public async Task<User> PatchAvatar(string userId, string? imagePath)
+        public async Task<User> PatchAvatar(string userId, int? imageId)
         {
             var user = _context.Users.Find(userId) ?? throw new KeyNotFoundException(_describes.KeyNotFound(userId));
 
-            user.AvatarUrl = imagePath;
+            user.AvatarId = imageId;
             await _context.SaveChangesAsync();
 
             return user;

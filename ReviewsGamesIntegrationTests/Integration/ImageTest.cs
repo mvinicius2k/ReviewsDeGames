@@ -23,13 +23,13 @@ using System.Threading.Tasks;
 
 namespace ReviewsGamesTests.Integration
 {
-    public class ImageTest : IClassFixture<WebFactory>, IClassFixture<UserFixture>, IClassFixture<ImagesSetFixture>
+    public class ImageTest : IClassFixture<WebFactory>, IClassFixture<UserFixture>, IClassFixture<ImagesSet>
     {
         private readonly WebFactory _web;
         private readonly UserFixture _userFixture;
-        private readonly ImagesSetFixture _imagesSet;
+        private readonly ImagesSet _imagesSet;
 
-        public ImageTest(WebFactory web, UserFixture userFixture, ImagesSetFixture imagesSet)
+        public ImageTest(WebFactory web, UserFixture userFixture, ImagesSet imagesSet)
         {
             _web = web;
             _userFixture = userFixture;

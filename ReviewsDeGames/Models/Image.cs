@@ -1,4 +1,5 @@
 ﻿using ReviewsDeGames.Services;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace ReviewsDeGames.Models
@@ -13,7 +14,8 @@ namespace ReviewsDeGames.Models
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 
         public virtual User Owner { get; set; }
-
+        public virtual User? UsedByAvatar { get; set; }
+        public virtual Post? UsedByPostAsFeatured { get; set; }
 
         
 

@@ -11,15 +11,17 @@ using System.Threading.Tasks;
 
 namespace ReviewsGamesTests.Fixtures
 {
-    public class ImagesSetFixture
+    public class ImagesSet
     {
         public readonly static string[] SupportedTypes = new string[] { ".jpg", ".jpeg", ".png", "bmp" };
         public int Width { get; set; } = 64;
         public int Height { get; set; } = 64;
-        public string RelativeFolderPath { get; set; } = "testImages";
+        public string RelativeFolderPath { get; set; } = ".";
         public HashSet<FileInfo> Images { get; private set; } = new();
-        public string ImageFolder => Path.Combine(Directory.GetCurrentDirectory(), RelativeFolderPath);
+        public string ImageFolder => Path.Combine(TestValues.ImagesPath, RelativeFolderPath);
+
         
+
         private void ResolveDirectory()
         {
             if (!Directory.Exists(ImageFolder))

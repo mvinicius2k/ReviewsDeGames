@@ -9,6 +9,7 @@ namespace ReviewsDeGames.Repository
     {
         public UserVoteRepository(ReviewGamesContext context, IDescribesService describes) : base(context, describes)
         {
+            
         }
     }
 }

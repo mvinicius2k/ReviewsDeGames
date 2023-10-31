@@ -9,7 +9,7 @@ namespace ReviewsDeGames.Repository
         public Task DirectSignIn(User user, bool isPersistent = false);
         public Task<SignInResult> SignIn(string nickname, string password, bool rememberMe);
         public Task SignOut();
-        public Task<User> PatchAvatar(string userId, string? imagePath);
+        public Task<User> PatchAvatar(string userId, int? imageId);
 
         /// <exception cref="KeyNotFoundException"/>
         public Task<IdentityResult> UpdatePassword(string id, string currentPassword, string newPassword);

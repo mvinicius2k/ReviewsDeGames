@@ -3,6 +3,7 @@
     public interface IDescribesService
     {
         public string KeyNotFound(object id);
+        public string EntityNotFound(object name, object id);
         public string InvalidCharacters();
         public string MaxLength(object max);
         public string NotEmptyOrMaxLength(object max);
@@ -59,5 +60,8 @@
 
         public string NotEmptyOrMaxLength(object max)
             => "Precisa conter algo e ter menos que " + max;
+
+        public string EntityNotFound(object name, object id)
+            => $"Nenhum {name} com id {id} foi encontrado";
     }
 }

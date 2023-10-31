@@ -14,7 +14,7 @@ namespace ReviewsGamesIntegrationTests.Fakers
         {
             RuleFor(u => u.Email, f => f.Internet.Email());
             RuleFor(u => u.UserName, f => f.Internet.UserName());
-            RuleFor(u => u.AvatarUrl, f => f.Internet.Avatar());
+            RuleFor(u => u.AvatarId, f => null);
 
         }
     }

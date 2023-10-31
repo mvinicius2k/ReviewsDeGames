@@ -1,13 +1,14 @@
 ﻿using FluentValidation;
 using ReviewsDeGames.Helpers;
 using ReviewsDeGames.Models;
+using ReviewsDeGames.Repository;
 using ReviewsDeGames.Services;
 
 namespace ReviewsDeGames.Validators
 {
     public class PostValidator : AbstractValidator<PostRequestDto>
     {
-        public PostValidator(IDescribesService describes)
+        public PostValidator(IDescribesService describes, IImagesRepository images)
         {
             RuleFor(p => p.Title)
                 .NotEmpty()
@@ -19,9 +20,9 @@ namespace ReviewsDeGames.Validators
 
 
 
-            RuleFor(p => p.FeaturedImageUrl)
-                .SupportedImageUrl(Values.SupportedImageExtensions).When(p => !string.IsNullOrWhiteSpace(p.FeaturedImageUrl))
-                .WithMessage(describes.FormatNotSupported(Values.SupportedImageExtensions));
+            RuleFor(u => u.FeaturedImageUrl)
+                 .MustAsync(async (avtId, _) => (await images.GetById(avtId.Value)) != null).When(post => post.FeaturedImageUrl != null)
+                 .WithMessage(u => describes.EntityNotFound(nameof(Image), u.FeaturedImageUrl));
 
         }
     }

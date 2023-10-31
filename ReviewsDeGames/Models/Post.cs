@@ -13,13 +13,14 @@ namespace ReviewsDeGames.Models
         public string Title { get; set; }
         public string Text { get; set; }
         [MaxLength(FeaturedImageMaxLength)]
-        public string? FeaturedImageUrl { get; set; }
+        public int? FeaturedImageId { get; set; }
         public DateTime PublicationDate { get; set; }
         public DateTime? LastEdit { get; set; }
         [MaxLength(Values.IdentityIdMaxLength)]
         public string OwnerId { get; set; }
 
         public virtual User Owner { get; set; }
+        public virtual Image? FeaturedImage { get; set; }
         public virtual ICollection<UserVote> Votes {  get; set; }
 
         public int GetId()
@@ -33,7 +34,7 @@ namespace ReviewsDeGames.Models
     {
         public string Title { get; init; }
         public string Text { get; init; }
-        public string? FeaturedImageUrl { get; init; }
+        public int? FeaturedImageUrl { get; init; }
 
     }
 }
