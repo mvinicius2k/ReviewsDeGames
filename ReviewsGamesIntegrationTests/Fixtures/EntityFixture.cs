@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 
 namespace ReviewsGamesTests.Fixtures
 {
+    public interface IEntityPopulate<T>
+    {
+        public T Input { get; set; }
+        public Task<HttpResponseMessage> Send(HttpClient http);
+    }
     public interface IPopulate
     {
         public Task<HttpResponseMessage> Populate(HttpClient http);

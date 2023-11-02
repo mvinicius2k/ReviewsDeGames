@@ -12,21 +12,21 @@ namespace ReviewsGamesTests.Helpers
 {
     public class ImagePopulate : IPopulate
     {
-        public string FolderName { get; private set; } = TestValues.ImagesFolderName;
+        public ImagesSet ImagesSet { get; private set; }
 
-        
+        public ImagePopulate(ImagesSet imagesSet)
+        {
+            ImagesSet = imagesSet;
+        }
 
         public async Task<HttpResponseMessage> Populate(HttpClient http)
         {
-            var imageSet = new ImagesSet
-            {
-                RelativeFolderPath = FolderName
-            };
-            imageSet.ReadPath();
+
+            ImagesSet.ReadPath();
 
 
             var endpoint = EndPoints.Resolve<ImagesController>(ImagesController.ActionAdd);
-            var multipart = await http.PostMultipartFiles(imageSet.Images.ToArray(), endpoint, ImagesController.AddFilesForm);
+            var multipart = await http.PostMultipartFiles(ImagesSet.Images.ToArray(), endpoint, ImagesController.AddFilesForm);
 
             return multipart;
         }

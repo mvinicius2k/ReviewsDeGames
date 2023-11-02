@@ -11,18 +11,26 @@ using System.Threading.Tasks;
 
 namespace ReviewsGamesTests.Fixtures
 {
+    public class AvatarsSet : ImagesSet
+    {
+        public AvatarsSet()
+        {
+            RelativeFolderPath = TestValues.AvatarsFolderName;
+        }
+    }
+
     public class ImagesSet
     {
         public readonly static string[] SupportedTypes = new string[] { ".jpg", ".jpeg", ".png", "bmp" };
         public int Width { get; set; } = 64;
         public int Height { get; set; } = 64;
-        public string RelativeFolderPath { get; set; } = ".";
-        public HashSet<FileInfo> Images { get; private set; } = new();
+        public string RelativeFolderPath { get; protected set; } = ".";
+        public HashSet<FileInfo> Images { get; protected set; } = new();
         public string ImageFolder => Path.Combine(TestValues.ImagesPath, RelativeFolderPath);
 
         
 
-        private void ResolveDirectory()
+        protected void ResolveDirectory()
         {
             if (!Directory.Exists(ImageFolder))
                 Directory.CreateDirectory(ImageFolder);
@@ -30,7 +38,7 @@ namespace ReviewsGamesTests.Fixtures
         public void ReadPath()
         {
             ResolveDirectory();
-            var files = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), RelativeFolderPath));
+            var files = Directory.GetFiles(ImageFolder);
             var imagesName = files.Where(f => SupportedTypes.Contains(Path.GetExtension(f)))
                 .Select(i => new FileInfo(i));
             for (int i = 0; i < imagesName.Count(); i++)

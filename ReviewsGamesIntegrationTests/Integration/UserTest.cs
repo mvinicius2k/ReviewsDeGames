@@ -12,6 +12,7 @@ using ReviewsGamesIntegrationTests.Fixtures;
 using ReviewsGamesIntegrationTests.Helpers;
 using ReviewsGamesTests.Fixtures;
 using ReviewsGamesTests.Helpers;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Http.Json;
@@ -32,25 +33,23 @@ namespace ReviewsGamesTests.Integration
     }
 
 
-    public class UserTest : IClassFixture<WebFactory>, IClassFixture<UserFixture>, IClassFixture<EntityFixture<ImageResponseDto>>, IAsyncLifetime
+    public class UserTest : IClassFixture<WebFactory>, IClassFixture<UserFixture>, IClassFixture<AvatarsSet>, IAsyncLifetime
     {
         
         private readonly WebFactory _web;
         private readonly UserFixture _userFixture;
-//        private readonly UserRegisterDto _userAdmin;
-        private readonly EntityFixture<ImageResponseDto> _imagesFixture;
-        private readonly IPopulate _imagePopulate;
-        private int[] imageIds;
-        public UserTest(WebFactory web, UserFixture userFixture, EntityFixture<ImageResponseDto> imagesFixture)
+        private readonly AvatarsSet _avatarsSet;
+
+        public UserTest(WebFactory web, UserFixture userFixture, AvatarsSet avatarsSet)
         {
+
+
             _web = web;
             _userFixture = userFixture;
-            _imagesFixture = imagesFixture;
-            _imagePopulate = new ImagePopulate();
-            //_userAdmin = new UseImagePopulaterFaker().Generate();
+            _avatarsSet = avatarsSet;
+            
+            
         }
-
-        
 
         [Fact]
         public async Task Get_ShouldReturn200()
@@ -68,8 +67,8 @@ namespace ReviewsGamesTests.Integration
             //Arrange
             var http = _web.Instance.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, EndPoints.UserRegister);
-            var avatarId = _imagesFixture.PickRandom().Id;
-            dto = dto with { AvatarId = avatarId }; //Copiando dto e inserindo chave estrangeira
+            //var avatarId = _imagesFixture.PickRandom().Id;
+            //dto = dto with { AvatarId = avatarId }; //Copiando dto e inserindo chave estrangeira
 
             request.Headers.Add(UsersController.PostRegisterPassHeader, password);
             request.Content = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
@@ -134,9 +133,14 @@ namespace ReviewsGamesTests.Integration
             //Obtendo usuário logado
             UserData loggedUser = await _userFixture.GetOrCreate(_web) ?? throw new Exception("Falha ao obter user");
             var http = _userFixture.Sections[loggedUser];
+            var faker = new Faker();
+            var files = new FileInfo[] { faker.PickRandom(_avatarsSet.Images.ToArray()) };
+            var imageDto = await QuickCreate.PostImage(http, files);
+            if (!imageDto.Any())
+                Assert.Fail("Não foi possível adicionar um avatar");
             var newInfos = new UserRegisterDto
             {
-                AvatarId = null,
+                AvatarId = imageDto.First().Id,
                 Email = "meu-email@gmail.com",
                 UserName = "Um.novo.nick"
             };
@@ -157,7 +161,7 @@ namespace ReviewsGamesTests.Integration
 
         }
 
-
+        
         [Fact]
         public async Task PatchInfos_Invalid_ShouldFail()
         {
@@ -260,6 +264,7 @@ namespace ReviewsGamesTests.Integration
         {
             var fakerWithBadEmail = new UserFaker();
             var fakerWithBadNickname = new UserFaker();
+            var fakerWithBadAvatarId = new UserFaker();
 
             fakerWithBadEmail.RuleFor(u => u.Email, f => f.PickRandom(new string[]
             {
@@ -270,7 +275,7 @@ namespace ReviewsGamesTests.Integration
             {
                 "   ", "", f.Internet.Email(), f.Random.String(300, 'a', 'z'), string.Join("", f.Random.Shuffle(f.Random.String(10, 'a','z') + "@")),
             }));
-
+            fakerWithBadNickname.RuleFor(u => u.AvatarId, f => f.Random.Int());
 
             var faker = new Faker();
             var badPasswords = new string[] {
@@ -280,6 +285,7 @@ namespace ReviewsGamesTests.Integration
             var users = new List<UserRegisterDto>();
             users.AddRange(fakerWithBadEmail.Generate(10));
             users.AddRange(fakerWithBadNickname.Generate(10));
+            users.AddRange(fakerWithBadAvatarId.Generate(3));
 
 
 
@@ -292,13 +298,15 @@ namespace ReviewsGamesTests.Integration
 
         public async  Task InitializeAsync()
         {
+            var imagesSetSize = 10;
             var loggedUser = await _userFixture.GetOrCreate(_web);
             var http = _userFixture.Sections[loggedUser];
-            var result = await _imagesFixture.Populate(_imagePopulate, 15, http);
-            if (!result.Any())
-                Assert.Fail($"Pasta de imagens {TestValues.ImagesFolderName}");
-            
-            var imageIds = _imagesFixture.Dataset.Select(ds => ds.Id).ToArray();
+            _avatarsSet.ReadPath();
+            await _avatarsSet.TryPopulate(imagesSetSize);
+            if (!_avatarsSet.Images.Any())
+                Assert.Fail($"Pasta de imagens {_avatarsSet.ImageFolder} está vazia");
+
+
         }
 
         public Task DisposeAsync()
