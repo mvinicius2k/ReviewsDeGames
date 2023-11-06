@@ -21,5 +21,8 @@ namespace ReviewsGamesTests.Fakers
             RuleSet(BadTitleRule, (r) => r.RuleFor(p => p.Title, f => f.Lorem.Paragraph(4)));
             RuleSet(BadFeaturedImageRule, (r) => r.RuleFor(p => p.Title, f => f.Lorem.Paragraph(4)));
         }
+
     }
+
+    
 }

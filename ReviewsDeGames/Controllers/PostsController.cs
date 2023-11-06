@@ -81,11 +81,12 @@ namespace ReviewsDeGames.Controllers
             }
 
             var post = _mapper.Map<Post>(postDto);
+            post.OwnerId = userIdRequest;
             post.LastEdit = DateTime.UtcNow;
 
             await _posts.Update(id, post);
 
-            return CreatedAtAction(ActionCreate, post);
+            return Ok(post);
         }
 
         [HttpDelete, Route(ActionDelete)]
