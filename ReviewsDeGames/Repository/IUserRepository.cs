@@ -18,8 +18,7 @@ namespace ReviewsDeGames.Repository
         public ValueTask<bool> VerifyPassword(string userId, string password);
         public IQueryable<User> GetQuery();
         public Task<IdentityResult> Delete(string id);
-        public Task<IdentityResult> AddRoleToUser(User user, string role);
-        public Task<IdentityResult> RemoveRoleFromUser(User user, string role);
+     
 
     }
 }

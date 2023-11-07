@@ -16,7 +16,6 @@ namespace ReviewsDeGames.Repository
         private readonly SignInManager<User> _signInManager;
         private readonly ReviewGamesContext _context;
         private readonly IDescribesService _describes;
-        private readonly RoleManager<IdentityRole> _roleManager;
 
         public UserRepository(ILogger<UserRepository> logger, UserManager<User> userManager, SignInManager<User> signInManager, ReviewGamesContext context, IDescribesService describes, RoleManager<IdentityRole> roleManager)
         {
@@ -25,7 +24,6 @@ namespace ReviewsDeGames.Repository
             _signInManager = signInManager;
             _context = context;
             _describes = describes;
-            _roleManager = roleManager;
         }
 
         public Task DirectSignIn(User user, bool isPersistent = false)
@@ -66,25 +64,25 @@ namespace ReviewsDeGames.Repository
 
         public async Task<IdentityResult> TryRegister(User user, string rawPassowrd)
             => await _userManager.CreateAsync(user, rawPassowrd);
-        
-        public async Task<IdentityResult> AddRoleToUser(User user, string role)
-        {
-            var adminRoleExists = await _roleManager.RoleExistsAsync(role);
-            if (!adminRoleExists)
-            {
-                await _roleManager.CreateAsync(new IdentityRole(role));
-            }
 
-            return await _userManager.AddToRoleAsync(user, role);
-        }
+        //public async Task<IdentityResult> AddRoleToUser(User user, string role)
+        //{
+        //    var adminRoleExists = await _roleManager.RoleExistsAsync(role);
+        //    if (!adminRoleExists)
+        //    {
+        //        await _roleManager.CreateAsync(new IdentityRole(role));
+        //    }
 
-        public async Task<IdentityResult> RemoveRoleFromUser(User user, string role)
-            => await _roleManager.DeleteAsync(new IdentityRole(role));
-        
+        //    return await _userManager.AddToRoleAsync(user, role);
+        //}
+
+        //public async Task<IdentityResult> RemoveRoleFromUser(User user, string role)
+        //    => await _roleManager.DeleteAsync(new IdentityRole(role));
+
 
         public Task HardUpdate(string id, User model)
         {
-            if(!_context.Users.Any(u => id == u.Id))
+            if (!_context.Users.Any(u => id == u.Id))
                 throw new KeyNotFoundException(_describes.KeyNotFound(id));
 
             model.Id = id;
@@ -106,10 +104,11 @@ namespace ReviewsDeGames.Repository
             return result.Succeeded;
         }
 
-        public Task<IdentityResult> Delete(string id)
+        public async Task<IdentityResult> Delete(string id)
         {
+
             var userToDelete = _context.Users.Find(id) ?? throw new KeyNotFoundException(_describes.KeyNotFound(id));
-            return _userManager.DeleteAsync(userToDelete);
+            return await _userManager.DeleteAsync(userToDelete);
         }
     }
 }

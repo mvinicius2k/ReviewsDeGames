@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using ReviewsDeGames.Controllers;
+using ReviewsDeGames.Helpers;
 using ReviewsDeGames.Models;
 using ReviewsGamesIntegrationTests.Fakers;
 using ReviewsGamesIntegrationTests.Helpers;
@@ -20,6 +21,7 @@ namespace ReviewsGamesIntegrationTests.Fixtures
     public class UserFixture
     {
         public Dictionary<UserData, HttpClient> Sections { get; private set; }
+        
         public UserFixture()
         {
             Sections = new Dictionary<UserData, HttpClient>();
@@ -48,18 +50,44 @@ namespace ReviewsGamesIntegrationTests.Fixtures
 
         }
 
-        public async Task<UserData?> GetOrCreate(WebFactory web)
+        public async Task<UserData> GetOrCreate(WebFactory web)
         {
             if (Sections.Count == 0)
             {
                 var userToAdd = new UserFaker().Generate();
-                return await Create(userToAdd, "senhaVálida1234", web);
+                var addedUser = await Create(userToAdd, "senhaVálida1234", web);
+                if (addedUser == null)
+                    Assert.Fail("Não foi possível adicionar o usuário");
+                return addedUser;
             }
             else
                 return Sections.Keys.First();
         }
 
+        public async Task<UserData> GetAdmin(WebFactory web)
+        {
+            //var query = $"$filter={nameof(User.NormalizedUserName)} eq 'ADMIN'";
+            var endpoint = EndPoints.Resolve<UsersController>(UsersController.ActionLogin);
+            var client = web.Instance.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            request.Headers.Add(UsersController.LoginLoginHeader, Values.AdminUser.UserName);
+            request.Headers.Add(UsersController.LoginPasswordHeader, Values.AdminPassword);
+            request.Headers.Add(UsersController.LoginRememberHeader, "true");
+            var response = await client.SendAsync(request);
+            
+            var dto = await response.Content.ReadFromJsonAsync<UserResponseDto>();
 
+            
+                
+            var userData = new UserData
+            {
+                Dto = dto,
+                Password = Values.AdminPassword
+            };
+
+            Sections.Add(userData, client);
+            return userData;
+        }
 
 
         //public async Task<UserData> GetOrCreate(UserData user) 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using MimeMapping;
+using ReviewsDeGames.Models;
 
 namespace ReviewsDeGames.Helpers
 {
@@ -33,7 +34,13 @@ namespace ReviewsDeGames.Helpers
 
         public const string RoleAdmin = "admin";
 
-
+        public static readonly User AdminUser = new User
+        {
+            Email = "admin@email.com",
+            AvatarId = null,
+            UserName = "Admin",
+        };
+        public static readonly string AdminPassword = "Admin1234";
 
 
 

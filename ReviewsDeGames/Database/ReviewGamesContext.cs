@@ -33,10 +33,7 @@ namespace ReviewsDeGames.Database
                 .WithMany(u => u.Posts)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<UserVote>()
-                .HasOne(uv => uv.Post)
-                .WithMany(p => p.Votes)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Post>().HasMany(p => p.Votes).WithOne(uv => uv.Post).OnDelete(DeleteBehavior.Cascade);
             builder.Entity<UserVote>()
                 .HasOne(uv => uv.User)
                 .WithMany(u => u.Votes)

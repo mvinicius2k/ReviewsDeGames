@@ -7,25 +7,22 @@ using ReviewsDeGames.Repository;
 
 namespace ReviewsDeGames.Database
 {
-    public class DbInit 
+    public class DbInit
     {
-        private static readonly User AdminUser = new User
-        {
-            Email = "admin@email.com",
-            AvatarId = null,
-            UserName = "Admin",
-        };
-        private static readonly string AdminPassword = "Admin1234";
+
+        
 
         private readonly ILogger<DbInit> _logger;
         private readonly ReviewGamesContext _context;
         private readonly IUserRepository _users;
+        private readonly IRolesRepository _roles;
 
-        public DbInit(ILogger<DbInit> logger, ReviewGamesContext context, IUserRepository users)
+        public DbInit(ILogger<DbInit> logger, ReviewGamesContext context, IUserRepository users, IRolesRepository roles)
         {
             _logger = logger;
             _context = context;
             _users = users;
+            _roles = roles;
         }
 
         public async Task Initialize(bool seed, bool restart)
@@ -44,16 +41,16 @@ namespace ReviewsDeGames.Database
                 _logger.LogError(e, "Erro ao criar DB");
                 throw;
             }
-            
 
-          
+
+
             if (!seed)
                 return;
 
-            if(!_context.Users.Any())
-                await _users.TryRegister(AdminUser, AdminPassword);
+            if (!_context.Users.Any())
+                await _users.TryRegister(Values.AdminUser, Values.AdminPassword);
 
-            await _users.AddRoleToUser(AdminUser, Values.RoleAdmin);
+            await _roles.Put(Values.RoleAdmin, Values.AdminUser.Id);
 
 
 

@@ -31,6 +31,9 @@ namespace ReviewsDeGames.Controllers
         public const string ActionGet = "get";
         public const string ActionDelete = $"delete/{{{DeleteIdRoute}}}";
 
+        public const string LoginLoginHeader = "login";
+        public const string LoginPasswordHeader = "password";
+        public const string LoginRememberHeader = "remember";
         public const string PostRegisterPassHeader = "pass";
         public const string PatchAvatarIdHeader = "Id";
         public const string PatchAvatarUrlHeader = "Avatar-Url";
@@ -41,6 +44,7 @@ namespace ReviewsDeGames.Controllers
         public const string VerifyPasswordPassHeader = "password";
         public const string VerifyPasswordIdRoute = "id";
         public const string DeleteIdRoute = "id";
+        public const string DeletePasswordHeader = "password";
 
         #endregion
 
@@ -49,14 +53,16 @@ namespace ReviewsDeGames.Controllers
         private readonly IMapper _mapper;
         private readonly IUserRepository _users;
         private readonly IDescribesService _describes;
+        private readonly IRolesRepository _roles;
 
-        public UsersController(IValidator<UserRegisterDto> validator, ILogger<UsersController> logger, IMapper mapper, IUserRepository users, IDescribesService describes)
+        public UsersController(IValidator<UserRegisterDto> validator, ILogger<UsersController> logger, IMapper mapper, IUserRepository users, IDescribesService describes, IRolesRepository roles)
         {
             _validator = validator;
             _logger = logger;
             _mapper = mapper;
             _users = users;
             _describes = describes;
+            _roles = roles;
         }
 
         [Route(ActionGet), HttpGet, EnableQuery]
@@ -98,14 +104,18 @@ namespace ReviewsDeGames.Controllers
         }
 
         [HttpPost, Route(ActionLogin)]
-        public async Task<IActionResult> Login([FromHeader] string login, [FromHeader] string pass, [FromHeader] bool rememberMe)
+        public async Task<IActionResult> Login([FromHeader(Name = LoginLoginHeader)] string login, [FromHeader(Name = LoginPasswordHeader)] string pass, [FromHeader(Name = LoginRememberHeader)] bool rememberMe)
         {
             try
             {
 
                 var verification = await _users.SignIn(login, pass, rememberMe);
                 if (verification.Succeeded)
-                    return Ok();
+                {
+                    var user = _users.GetQuery().First(x => x.NormalizedUserName == login.ToUpper());
+                    var response = _mapper.Map<UserResponseDto>(user);
+                    return Ok(response);
+                }
             }
             catch (KeyNotFoundException e)
             {
@@ -190,11 +200,18 @@ namespace ReviewsDeGames.Controllers
         }
 
         [HttpDelete,Route(ActionDelete), Authorize]
-        public async Task<IActionResult> Delete([FromRoute(Name = DeleteIdRoute)] string id)
+        public async Task<IActionResult> Delete([FromRoute(Name = DeleteIdRoute)] string id, [FromHeader(Name = DeletePasswordHeader)] string password)
         {
             //Verificando se nao está alterando outro user
             var userIdRequest = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userIdRequest != id)
+            var userRoles = await _roles.GetByUserId(userIdRequest);
+            var passwordVerification = await _users.VerifyPassword(userIdRequest, password);
+            var isAdmin = userRoles.Contains(Values.RoleAdmin);
+
+
+
+            
+            if (!passwordVerification || (userIdRequest != id && !isAdmin))
                 return Unauthorized();
 
             try

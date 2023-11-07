@@ -48,6 +48,7 @@ namespace ReviewsDeGames.Helpers
             services.AddScoped<IImagesRepository, ImagesRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<IUserVoteRepository, UserVoteRepository>();
+            services.AddScoped<IRolesRepository, RolesRepository>();
 
             return services;
         }

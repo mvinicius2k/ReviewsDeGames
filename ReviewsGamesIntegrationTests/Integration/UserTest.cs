@@ -25,13 +25,6 @@ using static System.Net.WebRequestMethods;
 
 namespace ReviewsGamesTests.Integration
 {
-    public class UserData
-    {
-        public string Password { get; set; }
-        public UserResponseDto Dto { get; set; }
-
-
-    }
 
 
     public class UserTest : IClassFixture<WebFactory>, IClassFixture<UserFixture>, IClassFixture<AvatarsSet>, IAsyncLifetime
@@ -49,9 +42,6 @@ namespace ReviewsGamesTests.Integration
             _web = web;
             _userFixture = userFixture;
             _avatarsSet = avatarsSet;
-            
-            
-            
         }
 
         [Fact]
@@ -269,10 +259,22 @@ namespace ReviewsGamesTests.Integration
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
         }
+
+
+
         [Fact]
         public async Task Delete_WithoutRole_ShouldFail()
         {
-            //A fazer
+            var loggedUser = await _userFixture.GetOrCreate(_web);
+            var firstUserSection = _userFixture.Sections[loggedUser];
+            var otherUser = await _userFixture.Create(_userFaker.Generate(), "senhaValida123", _web);
+            var endPoint = EndPoints.Resolve<UsersController>(UsersController.ActionDelete).Placeholder(otherUser.Dto.Id);
+            var request = new HttpRequestMessage(HttpMethod.Delete, endPoint);
+            request.Headers.Add(UsersController.DeletePasswordHeader, loggedUser.Password);
+
+            var response = await firstUserSection.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
         [Fact]
         public async Task Delete_Self_ShouldSucess()
@@ -280,10 +282,41 @@ namespace ReviewsGamesTests.Integration
             var loggedUser = await _userFixture.GetOrCreate(_web);
             var endPoint = EndPoints.Resolve<UsersController>(UsersController.ActionDelete).Placeholder(loggedUser.Dto.Id);
             var request = new HttpRequestMessage(HttpMethod.Delete, endPoint);
+            request.Headers.Add(UsersController.DeletePasswordHeader, loggedUser.Password);
             var http = _userFixture.Sections[loggedUser];
 
             var response = await http.SendAsync(request);
 
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task Delete_OtherWithPostsAsAdmin_ShouldReturn200()
+        {
+            var postsCount = 4;
+            var otherUser = await _userFixture.GetOrCreate(_web);
+            var admin = await _userFixture.GetAdmin(_web);
+            var adminSection = _userFixture.Sections[admin];
+            var postsFaker = new PostFaker();
+            var posts = postsFaker.Generate(4);
+            var otherUserSection = _userFixture.Sections[otherUser];
+            foreach (var post in posts)
+            {
+                
+                var postAdded = await QuickCreate.PostPost(otherUserSection, post);
+                await QuickCreate.PutVote(adminSection, new UserVoteRequestDto
+                {
+                    PostId = postAdded.Id,
+                    Value = 10, //Valor arbitrário
+                });
+            }
+
+            //Act
+            var endPoint = EndPoints.Resolve<UsersController>(UsersController.ActionDelete, otherUser.Dto.Id);
+            var request = new HttpRequestMessage(HttpMethod.Delete, endPoint);
+            request.Headers.Add(UsersController.DeletePasswordHeader, admin.Password);
+            var response = await adminSection.SendAsync(request);
+            response.Should().NotBeNull();
             response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
