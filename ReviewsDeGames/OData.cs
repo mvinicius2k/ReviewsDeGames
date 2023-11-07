@@ -13,9 +13,11 @@ namespace ReviewsDeGames
             ODataConventionModelBuilder builder = new();
             builder.EntitySet<User>(UsersController.Route).EntityType.Ignore(u => u.PasswordHash);
             builder.EntitySet<Image>(ImagesController.Route);
-            //builder.EntitySet<Role>(RolesController.Route);
-            //builder.EntitySet<Board>(BoardsController.Route);
+            builder.EntitySet<Post>(PostsController.Route);
+            builder.EntitySet<UserVote>(UserVotesController.Route);
             return builder.GetEdmModel();
         }
     }
+
+   
 }

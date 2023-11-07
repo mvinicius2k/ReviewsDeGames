@@ -2,6 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using ReviewsDeGames.Helpers;
 using ReviewsDeGames.Models;
 using ReviewsDeGames.Repository;
@@ -10,6 +11,7 @@ using System.Security.Claims;
 
 namespace ReviewsDeGames.Controllers
 {
+    [ApiController, Route(Route)]
     public class UserVotesController : ControllerBase
     {
         private readonly IUserVoteRepository _votes;
@@ -17,12 +19,12 @@ namespace ReviewsDeGames.Controllers
         private readonly IMapper _mapper;
         private readonly IDescribesService _describesService;
         private readonly IValidator<UserVoteRequestDto> _validator;
-        private readonly IPostRepository _posts;
 
         public const int MinScore = 0;
         public const int MaxScore = 10;
 
         public const string Route = "UserVotes";
+        public const string ActionGet = "get";
         public const string ActionVote = "vote";
         public const string ActionUnvote = $"unvote/{{{UnvoteRoutePostId}}}";
 
@@ -37,7 +39,9 @@ namespace ReviewsDeGames.Controllers
             _validator = validator;
         }
 
-
+        [Route(ActionGet), HttpGet, EnableQuery]
+        public IQueryable<UserVote> Get()
+            => _votes.GetQuery();
 
         [HttpPut, Route(ActionVote), Authorize]
         public async Task<IActionResult> Vote(UserVoteRequestDto dto)
@@ -80,8 +84,6 @@ namespace ReviewsDeGames.Controllers
             {
                 return NotFound(_describesService.EntityNotFound(nameof(UserVote), (loggedUserId, postId)));
             }
-
-            
         }
     }
 }

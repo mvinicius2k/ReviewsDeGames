@@ -47,6 +47,7 @@ namespace ReviewsDeGames.Helpers
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IImagesRepository, ImagesRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<IUserVoteRepository, UserVoteRepository>();
 
             return services;
         }
@@ -55,6 +56,7 @@ namespace ReviewsDeGames.Helpers
             services.AddValidatorsFromAssemblyContaining<UserRegisterDto>();
             services.AddValidatorsFromAssemblyContaining<ImageRequestDto>();
             services.AddValidatorsFromAssemblyContaining<PostRequestDto>();
+            services.AddValidatorsFromAssemblyContaining<UserVoteRequestDto>();
             return services;
         }
 

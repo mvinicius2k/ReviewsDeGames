@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Bogus;
+using Microsoft.AspNetCore.Http;
 using ReviewsDeGames.Controllers;
 using ReviewsDeGames.Models;
 using ReviewsGamesIntegrationTests.Helpers;
@@ -28,7 +29,16 @@ namespace ReviewsGamesTests.Helpers
                 Assert.Fail("Não foi desserializar a resposta de post");
             return post;
         }
-        
+        public static async Task<ImageResponseDto> PostSingleImage(HttpClient http, ImagesSet set)
+        {
+            var faker = new Faker();
+            var randomImage = faker.PickRandom(set.Images.ToArray());
+            var response = await PostImage(http, new FileInfo[] { randomImage });
+            var image = response.FirstOrDefault();
+            if (image == null)
+                Assert.Fail("Nenhuma imagem foi registrada");
+            return image;
+        }
         public static async Task<ImageResponseDto[]> PostImage(HttpClient http, FileInfo[] files)
         {
             var imageResponse = await http.PostMultipartFiles(
@@ -46,6 +56,21 @@ namespace ReviewsGamesTests.Helpers
                 .Where(r => r.StatusCode == StatusCodes.Status201Created)
                 .Select(m => m.Result!).ToArray();
             return result;
+        }
+
+        public static async Task<UserVote> PutVote(HttpClient http, UserVoteRequestDto dto)
+        {
+            var endpoint = EndPoints.Resolve<UserVotesController>(UserVotesController.ActionVote);
+            var response = await http.PutAsJsonAsync(endpoint, dto);
+            if(response == null || !response.IsSuccessStatusCode)
+                Assert.Fail("Não foi possível votar");
+
+            var dtoResponse = await response.Content.ReadFromJsonAsync<UserVote>();
+            if (dtoResponse == null)
+                Assert.Fail("Erro ao tentar obter json");
+            return dtoResponse;
+                
+
         }
     }
 }

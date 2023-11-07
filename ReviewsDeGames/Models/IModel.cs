@@ -4,5 +4,6 @@
     {
         public TId GetId();
         public void SetId(TId value);
+        public object[] GetIdKeys();
     }
 }

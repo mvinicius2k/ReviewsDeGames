@@ -10,6 +10,7 @@ using ReviewsDeGames.Models;
 using ReviewsGamesIntegrationTests.Fakers;
 using ReviewsGamesIntegrationTests.Fixtures;
 using ReviewsGamesIntegrationTests.Helpers;
+using ReviewsGamesTests.Fakers;
 using ReviewsGamesTests.Fixtures;
 using ReviewsGamesTests.Helpers;
 using System.Collections.Generic;
@@ -39,6 +40,7 @@ namespace ReviewsGamesTests.Integration
         private readonly WebFactory _web;
         private readonly UserFixture _userFixture;
         private readonly AvatarsSet _avatarsSet;
+        private readonly UserFaker _userFaker = new UserFaker();
 
         public UserTest(WebFactory web, UserFixture userFixture, AvatarsSet avatarsSet)
         {
@@ -49,15 +51,50 @@ namespace ReviewsGamesTests.Integration
             _avatarsSet = avatarsSet;
             
             
+            
         }
 
         [Fact]
-        public async Task Get_ShouldReturn200()
+        public async Task Get_QueryUsers_ShouldSucess()
+        {
+            var pageSize = 5;
+            var postFaker = new PostFaker();
+            for (int i = 0; i < pageSize*2; i++)
+            {
+                var userData = await _userFixture.Create(_userFaker.Generate(), "passwrdValido10", _web);
+                var section = _userFixture.Sections[userData];
+                await QuickCreate.PostPost(section, postFaker.Generate());
+
+            }
+            var excludeAdmin = $"$filter={nameof(User.NormalizedUserName)} ne 'ADMIN'";
+            var expand = nameof(User.Posts); 
+            var orderBy = nameof(User.NormalizedUserName);
+            var query = $"$orderby={orderBy}&$skip=0&$top={pageSize}&$expand={expand}&{excludeAdmin}";
+            var http = _web.Instance.CreateClient();
+            var endpoint = EndPoints.Resolve<UsersController>(UsersController.ActionGet) + "?" + query;
+            var response = await http.GetAsync(endpoint);
+            response.Should().NotBeNull();
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var results = await response.Content.ReadFromJsonAsync<User[]>();
+
+            results.Should().NotContain(x => x.NormalizedUserName == "ADMIN");
+            results.Should().BeInAscendingOrder(u => u.NormalizedUserName);
+            results.All(u => u.Posts.Any()).Should().BeTrue();
+            results.Should().HaveCount(pageSize);
+
+
+        }
+
+        [Fact]
+        public async Task Get_All_ShouldReturn200WithoutPassowordHash()
         {
             var http = _web.Instance.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, EndPoints.UserGetAll);
             var response = await http.SendAsync(request);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var users = await response.Content.ReadFromJsonAsync<User[]>();
+            users.Should().NotBeNull();
+            users.All(u => u.PasswordHash == "secret").Should().BeTrue();
         }
 
 
@@ -260,6 +297,7 @@ namespace ReviewsGamesTests.Integration
             foreach (var item in users)
                 yield return new object[] { item, faker.PickRandom(passwords) };
         }
+        
         public static IEnumerable<object[]> InvalidUsersParams()
         {
             var fakerWithBadEmail = new UserFaker();

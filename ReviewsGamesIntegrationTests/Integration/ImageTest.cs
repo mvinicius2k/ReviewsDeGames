@@ -9,6 +9,7 @@ using ReviewsDeGames.Models;
 using ReviewsGamesIntegrationTests.Fakers;
 using ReviewsGamesIntegrationTests.Fixtures;
 using ReviewsGamesIntegrationTests.Helpers;
+using ReviewsGamesTests.Fakers;
 using ReviewsGamesTests.Fixtures;
 using ReviewsGamesTests.Helpers;
 using System;
@@ -28,6 +29,7 @@ namespace ReviewsGamesTests.Integration
         private readonly WebFactory _web;
         private readonly UserFixture _userFixture;
         private readonly ImagesSet _imagesSet;
+        
 
         public ImageTest(WebFactory web, UserFixture userFixture, ImagesSet imagesSet)
         {
@@ -36,6 +38,43 @@ namespace ReviewsGamesTests.Integration
             _imagesSet = imagesSet;
 
             _imagesSet.ReadPath();
+        }
+
+        [Fact]
+        public async Task Get_QueryImages_ShouldSucess()
+        {
+            //Arrange
+            var pageSize = 5;
+            var user = await _userFixture.GetOrCreate(_web);
+            var section = _userFixture.Sections[user];
+
+            //Enviando imagens
+            await _imagesSet.TryPopulate(pageSize * 2);
+            if (_imagesSet.Images.Count <= pageSize + 1)
+                Assert.Fail("Não foi possível obter imagens o suficiente para testar (picsum as vezes não permite o download)");
+
+            var imagesToUpload = _imagesSet.Images.ToArray();
+            await QuickCreate.PostImage(section, imagesToUpload);
+
+            //Montando query
+            var expand = nameof(Image.Owner);
+            var orderBy = nameof(Image.FileName);
+            var query = $"$orderby={orderBy}&$skip=0&$top={pageSize}&$expand={expand}";
+
+            //Act
+            var endpoint = EndPoints.Resolve<ImagesController>(UsersController.ActionGet) + "?" + query;
+            var response = await section.GetAsync(endpoint);
+
+            //Assert
+            response.Should().NotBeNull();
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var results = await response.Content.ReadFromJsonAsync<Image[]>();
+
+            results.Should().BeInAscendingOrder(u => u.FileName);
+            results.All(im => im.Owner != null).Should().BeTrue();
+            results.Should().HaveCount(pageSize);
+
+
         }
 
         [Fact]

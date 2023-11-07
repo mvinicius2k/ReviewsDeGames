@@ -2,6 +2,7 @@
 using ReviewsDeGames.Database;
 using ReviewsDeGames.Models;
 using ReviewsDeGames.Services;
+using System.Runtime.CompilerServices;
 
 namespace ReviewsDeGames.Repository
 {
@@ -16,6 +17,25 @@ namespace ReviewsDeGames.Repository
             _describes = describes;
         }
 
+        private object[] ToArray(TId key)
+        {
+            if (key is ITuple)
+            {
+                var tuple = (ITuple)key;
+                var result = new object[tuple.Length];
+                for (int i = 0; i < tuple.Length; i++)
+                {
+                    result[i] = tuple[i];
+                }
+                return result;
+            }
+            else
+            {
+                return new object[] { key };
+            }
+        }
+
+
         public virtual Task Create(TModel model)
         {
 
@@ -25,7 +45,7 @@ namespace ReviewsDeGames.Repository
         /// <inheritdoc/>
         public virtual Task Delete(TId id)
         {
-            var model = _context.Set<TModel>().Find(id);
+            var model = _context.Set<TModel>().Find(ToArray(id));
             if (model == null)
                 throw new KeyNotFoundException(_describes.KeyNotFound(id));
             _context.Set<TModel>().Remove(model);
@@ -39,12 +59,13 @@ namespace ReviewsDeGames.Repository
         /// <inheritdoc/>
         public virtual ValueTask<TModel?> GetById(TId id)
         {
-            return _context.Set<TModel>().FindAsync(id);
+
+            return _context.Set<TModel>().FindAsync(ToArray(id));
         }
         /// <inheritdoc/>
         public virtual Task Update(TId id, TModel model)
         {
-            var entity = _context.Set<TModel>().Find(id);
+            var entity = _context.Set<TModel>().Find(ToArray(id));
             if (entity == null)
                 throw new KeyNotFoundException(_describes.KeyNotFound(id));
 

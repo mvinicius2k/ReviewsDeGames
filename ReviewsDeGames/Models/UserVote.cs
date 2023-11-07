@@ -1,8 +1,12 @@
-﻿namespace ReviewsDeGames.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ReviewsDeGames.Models
 {
     public class UserVote : IModel<(string user, int post)>
     {
+        [Key]
         public string UserId { get; set; }
+        [Key]
         public int PostId { get; set; }
         public int Value { get; set; }
 
@@ -11,6 +15,9 @@
 
         public (string user, int post) GetId()
             => (UserId, PostId);
+
+        public object[] GetIdKeys()
+            => new object[] { UserId, PostId };
 
         public void SetId((string user, int post) value)
         {

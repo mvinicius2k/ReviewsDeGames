@@ -26,12 +26,46 @@ namespace ReviewsGamesTests.Integration
         private readonly WebFactory _web;
         private readonly UserFixture _userFixture;
         private readonly ImagesSet _imagesSet;
-
+        private readonly PostFaker _postFaker = new();
         public PostsTest(WebFactory web, UserFixture userFixture, ImagesSet imagesSet)
         {
             _web = web;
             _userFixture = userFixture;
             _imagesSet = imagesSet;
+        }
+
+        [Fact]
+        public async Task Get_QueryPosts_ShouldSucess()
+        {
+            //Arrange
+            var pageSize = 5;
+            var user = await _userFixture.GetOrCreate(_web);
+            var section = _userFixture.Sections[user];
+
+            //Enviando posts
+            var posts = _postFaker.Generate(pageSize * 2);
+            foreach (var post in posts)
+                await QuickCreate.PostPost(section, post);
+
+            //Montando query
+            var expand = nameof(Post.Owner);
+            var orderBy = nameof(Post.Title);
+            var query = $"$orderby={orderBy}&$skip=0&$top={pageSize}&$expand={expand}";
+
+            //Act
+            var endpoint = EndPoints.Resolve<PostsController>(PostsController.ActionGet) + "?" + query;
+            var response = await section.GetAsync(endpoint);
+
+            //Assert
+            response.Should().NotBeNull();
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var results = await response.Content.ReadFromJsonAsync<Post[]>();
+
+            results.Should().BeInAscendingOrder(p => p.Title);
+            results.All(im => im.Owner != null).Should().BeTrue();
+            results.Should().HaveCount(pageSize);
+
+
         }
 
         [Theory, MemberData(nameof(ValidPostsParams))]
@@ -53,7 +87,7 @@ namespace ReviewsGamesTests.Integration
             var loggedUser = await _userFixture.GetOrCreate(_web);
             var http = _userFixture.Sections[loggedUser];
             var endPOint = EndPoints.Resolve<PostsController>(PostsController.ActionCreate);
-            
+
             //Act
             var response = await http.PostAsJsonAsync(endPOint, postDto);
 
@@ -98,7 +132,7 @@ namespace ReviewsGamesTests.Integration
 
             //Assert
             response.Should().NotBeNull();
-            response.StatusCode.Should().Be(HttpStatusCode.OK); 
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
             var serialized = await response.Content.ReadFromJsonAsync<Post>();
             serialized.Should().NotBeNull();
         }
@@ -126,7 +160,7 @@ namespace ReviewsGamesTests.Integration
             //Assert
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-            
+
         }
         [Fact]
         public async Task Delete_OwnPost_ShouldReturn200()
@@ -165,11 +199,11 @@ namespace ReviewsGamesTests.Integration
         public static IEnumerable<object[]> InvalidPostsParams()
         {
             var count = 50;
-            var badTitleRule = $"default, {PostFaker.BadTitleRule}"; 
+            var badTitleRule = $"default, {PostFaker.BadTitleRule}";
             var badImageRule = $"default, {PostFaker.BadFeaturedImageRule}";
             var faker = new PostFaker();
-            var badTitle = faker.Generate(count/2, badTitleRule);
-            var badImage = faker.Generate(count/2, badImageRule);
+            var badTitle = faker.Generate(count / 2, badTitleRule);
+            var badImage = faker.Generate(count / 2, badImageRule);
             var posts = new Faker().Random.Shuffle(badTitle.Concat(badImage)).ToList();
 
             foreach (var post in posts)

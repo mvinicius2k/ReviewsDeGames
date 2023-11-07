@@ -6,7 +6,7 @@ namespace ReviewsDeGames.Models
     public class User : IdentityUser
     {
         public const int UsernameMaxLenght = 150;
-        
+        public new string PasswordHash => "secret"; //Escondendo a senha de aparecer nas consultas odata
 
         public int? AvatarId { get; set; }
 

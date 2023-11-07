@@ -22,7 +22,9 @@ namespace ReviewsDeGames.Models
         public int GetId()
             => Id;
 
-      
+        public object[] GetIdKeys()
+            => new object[] { Id };
+
         public void SetId(int value)
             => Id = value;
     }

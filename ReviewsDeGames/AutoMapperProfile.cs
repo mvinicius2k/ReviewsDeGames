@@ -14,7 +14,7 @@ namespace ReviewsDeGames
                 .ForMember(dest => dest.FileName, opt => opt.MapFrom(mp => mp.FileName));
             CreateMap<Image, ImageResponseDto>();
             CreateMap<PostRequestDto, Post>();
-
+            CreateMap<UserVoteRequestDto, UserVote>();
 
 
         }
