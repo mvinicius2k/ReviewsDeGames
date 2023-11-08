@@ -52,7 +52,8 @@ namespace ReviewsDeGames.Database
 
             if (!_context.Users.Any())
                 await _users.TryRegister(Values.AdminUser, Values.AdminPassword);
-
+            else
+                Values.AdminUser = _context.Users.First(u => u.UserName == Values.AdminUser.UserName);
             await _roles.Put(Values.RoleAdmin, Values.AdminUser.Id);
 
 

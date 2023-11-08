@@ -95,8 +95,7 @@ namespace ReviewsDeGames.Helpers
         /// <param name="seed">Cria entidades padrão no sistema</param>
         public static void AwakeDB(this WebApplication app, bool seed, bool restart)
         {
-            if (!(restart || seed))
-                return;
+           
 
             using (var scope = app.Services.CreateScope())
             {
