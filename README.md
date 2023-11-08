@@ -12,8 +12,7 @@ O OData foi usado para prover consultas GET, assim o client pode fazer várias c
 Basicamente o controlador recebe a requisição, faz a validação dos dados, passa para a camada Repository que faz as operações no Context do EF Core e depois retorna de volta para o controlador processar a resposta. Portanto há a camada de controlador, validação, repository e de banco de dados com o EF Core, além de algum serviços adicionais.
 
 Modelo Entidade Relacionamento
-
-![Alt text](./ER.svg)
+![Modelo Entidade Relacionamento](ReviewsDeGames/Docs/ER.svg)
 <img src="ReviewsDeGames/Docs/ER.svg">
 
 
