@@ -14,7 +14,7 @@ Basicamente o controlador recebe a requisição, faz a validação dos dados, pa
 Modelo Entidade Relacionamento
 
 ![Alt text](./ER.svg)
-<img src="./ER.svg">
+<img src="ReviewsDeGames/Docs/ER.svg">
 
 
 # Testes
