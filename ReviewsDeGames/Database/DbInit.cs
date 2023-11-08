@@ -7,6 +7,9 @@ using ReviewsDeGames.Repository;
 
 namespace ReviewsDeGames.Database
 {
+    /// <summary>
+    /// Faz o seed e registra algumas entidades  padrões para o sistema
+    /// </summary>
     public class DbInit
     {
 

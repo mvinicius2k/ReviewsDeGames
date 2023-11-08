@@ -1,23 +1,5 @@
 ﻿namespace ReviewsDeGames.Services
 {
-    public interface IDescribesService
-    {
-        public string KeyNotFound(object id);
-        public string EntityNotFound(object name, object id);
-        public string InvalidCharacters();
-        public string MaxLength(object max);
-        public string NotEmptyOrMaxLength(object max);
-        public string RangeValue(object min, object max);
-        public string RangeLength(object min, object max);
-        public string InvalidEmail();
-        public string UnavaliableEmail(object email);
-        public string UnavaliableUserName(object username);
-        public string NotEmpty();
-        public string FormatNotSupported(object[] supportedFormats);
-        public string ContentTypeNotSupported(object format);
-        public string MaxSizeOverflowMB(int maxSizeBytesCount);
-        public string FileNameMaxLength(int maxLegth);
-    }
     public class DescribesService : IDescribesService
     {
         public virtual string FormatNotSupported(object[] supportedFormats)
@@ -55,13 +37,13 @@
         public virtual string MaxSizeOverflowMB(int maxSizeBytesCount)
              => $"O arquivo ultrapassou o limite de {maxSizeBytesCount / (1024 * 1024)} MB";
 
-        public string FileNameMaxLength(int maxLegth)
+        public virtual string FileNameMaxLength(int maxLegth)
             => "O nome do arquivo precisa ser menor que " + maxLegth;
 
-        public string NotEmptyOrMaxLength(object max)
+        public virtual string NotEmptyOrMaxLength(object max)
             => "Precisa conter algo e ter menos que " + max;
 
-        public string EntityNotFound(object name, object id)
+        public virtual string EntityNotFound(object name, object id)
             => $"Nenhum {name} com id {id} foi encontrado";
     }
 }

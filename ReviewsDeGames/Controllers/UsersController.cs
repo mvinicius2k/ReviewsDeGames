@@ -64,15 +64,26 @@ namespace ReviewsDeGames.Controllers
             _describes = describes;
             _roles = roles;
         }
-
+        /// <summary>
+        /// Obtém uma consulta de <see cref="User"/> com base numa query OData passada pela url
+        /// </summary>
+        /// <response code="200">Sucesso</response>
         [Route(ActionGet), HttpGet, EnableQuery]
         public IQueryable<User> Get()
             => _users.GetQuery();
 
+        
+        /// <summary>
+        /// Registra um usuário comum
+        /// </summary>
+        /// <response code="201">Sucesso</response>
+        /// <response code="422">Caso seja verificado algum dado errado previamente</response>
+        /// <response code="400">Caso aconteça algum erro ao criar em decorrência de algum dado inválido</response>
+        /// <param name="pass"> Senha que será processada para um hash </param>
         [HttpPost, Route(ActionRegister)]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto dto, [FromHeader(Name = PostRegisterPassHeader)] string pass)
         {
-
+            //Ruleset de validação para novo usuário
             var rulesets = new string[] { UserValidator.AddNewRuleSet, "default" };
             var validation = await _validator.ValidateAsync(dto, opt => opt.IncludeRuleSets(rulesets));
             if (!validation.IsValid)
@@ -103,6 +114,11 @@ namespace ReviewsDeGames.Controllers
             }
         }
 
+        /// <summary>
+        /// Faz o login adicionando um cookie do identity na sessão
+        /// </summary>
+        /// <response code="201">Sucesso</response>
+        /// <response code="401"> O login ou senha estão incorretos </response>
         [HttpPost, Route(ActionLogin)]
         public async Task<IActionResult> Login([FromHeader(Name = LoginLoginHeader)] string login, [FromHeader(Name = LoginPasswordHeader)] string pass, [FromHeader(Name = LoginRememberHeader)] bool rememberMe)
         {
@@ -128,6 +144,7 @@ namespace ReviewsDeGames.Controllers
 
         }
 
+        /// <response code="200">Sucesso</response>
         [HttpPost, Route(ActionLogout)]
         public async Task<IActionResult> Logout()
         {
@@ -136,6 +153,13 @@ namespace ReviewsDeGames.Controllers
 
         }
 
+        /// <summary>
+        /// Edita as informações do usuário, menos a senha
+        /// </summary>
+        /// <response code="200">Sucesso</response>
+        /// <response code="401">Caso o usuário a editar seja um outro que não o logado ou aconteça algum erro de autenticação</response>
+        /// <response code="401">Usuário não encontrado</response>
+        /// <response code="422">Algum dado do modelo é inválido</response>
         [HttpPatch, Route(ActionPatchInfos), Authorize]
         public async Task<IActionResult> PatchInfos([FromRoute(Name = PatchInfosUserIdRoute)] string id,[FromBody] UserRegisterDto dto)
         {
@@ -165,12 +189,14 @@ namespace ReviewsDeGames.Controllers
             var response = _mapper.Map<User, UserResponseDto>(user);
             return Ok(response);
         }
-        
+
+        /// <summary>
+        /// Edita somente a senha
+        /// </summary>
+        /// <response code="200">Sucesso</response>
+        /// <response code="401">Algum erro de permissão ou a atual senha passada é incorreta</response>
         [HttpPatch, Route(ActionPatchPassword), Authorize]
-        public async Task<IActionResult> PatchPassowrd(
-        [FromRoute(Name = PatchPasswordUserIdRoute)] string userId,
-        [FromHeader(Name = PatchPasswordCurrentPasswordHeader)] string currentPassword,
-        [FromHeader(Name = PatchPasswordNewPasswordHeader)] string newPassoword)
+        public async Task<IActionResult> PatchPassowrd([FromRoute(Name = PatchPasswordUserIdRoute)] string userId, [FromHeader(Name = PatchPasswordCurrentPasswordHeader)] string currentPassword, [FromHeader(Name = PatchPasswordNewPasswordHeader)] string newPassoword)
         {
             //Verificando se nao está alterando outro user
             var userIdRequest = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -189,16 +215,21 @@ namespace ReviewsDeGames.Controllers
             return Unauthorized(ModelState);
         }
 
-
+        /// <response code="200">Sucesso</response>
         [HttpGet, Route(ActionVerifyPassword)]
-        public async ValueTask<IActionResult> VerifyPassword(
-            [FromRoute(Name = VerifyPasswordIdRoute)] string userId,
-            [FromHeader(Name = VerifyPasswordPassHeader)] string pass)
+        public async ValueTask<IActionResult> VerifyPassword([FromRoute(Name = VerifyPasswordIdRoute)] string userId, [FromHeader(Name = VerifyPasswordPassHeader)] string pass)
         {
             var result = await _users.VerifyPassword(userId, pass);
             return Ok(new PasswordVerificationDto { Result = result});
         }
 
+        /// <summary>
+        /// Deleta o usuário e todas as entidades dependentes dele em cascata
+        /// </summary>
+        /// <response code="200">Sucesso</response>
+        /// <response code="401">Erro de permissão</response>
+        /// <response code="400">Algum dado passado é incorreto</response>
+        /// <response code="404">Usuário não encontrado</response>
         [HttpDelete,Route(ActionDelete), Authorize]
         public async Task<IActionResult> Delete([FromRoute(Name = DeleteIdRoute)] string id, [FromHeader(Name = DeletePasswordHeader)] string password)
         {

@@ -9,6 +9,10 @@ using System.Net.Mime;
 
 namespace ReviewsDeGames.Validators
 {
+    /// <summary>
+    /// Valida os dados da imagem e a extensão. <br/>
+    /// [!] Não é feita nenhuma análise nos bytes da imagem,  um formato errado renomeado passará pela validação
+    /// </summary>
     public class ImageValidator : AbstractValidator<ImageRequestDto>
     {
         public const int MaxLengthBytes = 1024 * 1024 * 8; //8MB 

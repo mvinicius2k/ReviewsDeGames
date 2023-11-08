@@ -6,6 +6,7 @@ using ReviewsDeGames;
 using ReviewsDeGames.Database;
 using ReviewsDeGames.Helpers;
 using Serilog;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 
@@ -21,9 +22,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(opstions =>
+builder.Services.AddSwaggerGen(opt =>
 {
-    opstions.ResolveConflictingActions(x => x.First());
+    opt.ResolveConflictingActions(x => x.First());
+
+    //Ativando leitura de comentários por parte do Swashbuckle 
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    opt.IncludeXmlComments(xmlPath);
 });
 builder.Services.AddControllers()
     .AddOData(options => options.AddRouteComponents(Values.ODataPrefixRoute, OData.GetEdmModel())

@@ -6,6 +6,11 @@ using System.Runtime.CompilerServices;
 
 namespace ReviewsDeGames.Repository
 {
+    /// <summary>
+    /// Implementação comum para operações genéricas CRUD de repository
+    /// </summary>
+    /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TId"></typeparam>
     public class RepositoryBase<TModel, TId> where TModel : class,IModel<TId>
     {
         protected readonly ReviewGamesContext _context;
@@ -17,6 +22,12 @@ namespace ReviewsDeGames.Repository
             _describes = describes;
         }
 
+        /// <summary>
+        /// Converte um dado unitário ou tupla em um array de <see langword="object"></see>.
+        /// Útil para usar em conjunto com o Find do EF Core genericamente
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         private object[] ToArray(TId key)
         {
             if (key is ITuple)
@@ -42,7 +53,7 @@ namespace ReviewsDeGames.Repository
             _context.Set<TModel>().Add(model);
             return _context.SaveChangesAsync();
         }
-        /// <inheritdoc/>
+        /// <exception cref="KeyNotFoundException"></exception>
         public virtual Task Delete(TId id)
         {
             var model = _context.Set<TModel>().Find(ToArray(id));
@@ -51,18 +62,18 @@ namespace ReviewsDeGames.Repository
             _context.Set<TModel>().Remove(model);
             return _context.SaveChangesAsync();
         }
-        /// <inheritdoc/>
+        
         public virtual IQueryable<TModel> GetQuery()
         {
             return _context.Set<TModel>().AsQueryable();
         }
-        /// <inheritdoc/>
+        
         public virtual ValueTask<TModel?> GetById(TId id)
         {
 
             return _context.Set<TModel>().FindAsync(ToArray(id));
         }
-        /// <inheritdoc/>
+        /// <exception cref="KeyNotFoundException"></exception>
         public virtual Task Update(TId id, TModel model)
         {
             var entity = _context.Set<TModel>().Find(ToArray(id));

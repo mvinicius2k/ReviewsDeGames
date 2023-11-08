@@ -39,11 +39,21 @@ namespace ReviewsDeGames.Controllers
             _describesService = describesService;
         }
 
+        /// <summary>
+        /// Obtém uma consulta de <see cref="Post"/> para a query OData passada pela url
+        /// </summary>
+        /// <response code="200">Se a operação foi um sucesso</response>
         [Route(ActionGet), HttpGet, EnableQuery]
         public IQueryable<Post> Get()
             => _posts.GetQuery();
 
+        /// <summary>
+        /// Cria um novo post
+        /// </summary>
+        /// <response code="422">Algum erro de validação do body</response>
+        /// <response code="201">Sucesso</response>
         [HttpPost, Route(ActionCreate)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity), ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> Create(PostRequestDto postDto)
         {
             var validation = await _validator.ValidateAsync(postDto);
@@ -61,7 +71,15 @@ namespace ReviewsDeGames.Controllers
             return CreatedAtAction(ActionCreate, post);
         }
 
+        /// <summary>
+        /// Edita um post
+        /// </summary>
+        /// <response code="404">Caso o post a editar não exista</response>
+        /// <response code="401">Caso não esteja autenticado corretamente ou esteja editando um post que não é do usuário</response>
+        /// <response code="422">Caso o objeto body seja inválido</response>
+        /// <response code="200">Sucesso</response>
         [HttpPatch, Route(ActionEdit)]
+        [ProducesResponseType(StatusCodes.Status404NotFound), ProducesResponseType(StatusCodes.Status401Unauthorized), ProducesResponseType(StatusCodes.Status422UnprocessableEntity), ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Edit([FromRoute(Name = EditRouteId)] int id, PostRequestDto postDto)
         {
             
@@ -89,7 +107,14 @@ namespace ReviewsDeGames.Controllers
             return Ok(post);
         }
 
+        /// <summary>
+        /// Deleta um post, adiciona null em todas as entidades que o referencia e deleta também em cascata os votos e outras entidades dependentes
+        /// </summary>
+        /// <response code="404">Caso o post a deletar não exista</response>
+        /// <response code="401">Caso não esteja autenticado corretamente ou esteja deletando um post que não é do usuário</response>
+        /// <response code="200">Sucesso</response>
         [HttpDelete, Route(ActionDelete)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized), ProducesResponseType(StatusCodes.Status404NotFound), ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete([FromRoute(Name = DeleteRouteId)] int id)
         {
             var postToEdit = await _posts.GetById(id);

@@ -65,21 +65,6 @@ namespace ReviewsDeGames.Repository
         public async Task<IdentityResult> TryRegister(User user, string rawPassowrd)
             => await _userManager.CreateAsync(user, rawPassowrd);
 
-        //public async Task<IdentityResult> AddRoleToUser(User user, string role)
-        //{
-        //    var adminRoleExists = await _roleManager.RoleExistsAsync(role);
-        //    if (!adminRoleExists)
-        //    {
-        //        await _roleManager.CreateAsync(new IdentityRole(role));
-        //    }
-
-        //    return await _userManager.AddToRoleAsync(user, role);
-        //}
-
-        //public async Task<IdentityResult> RemoveRoleFromUser(User user, string role)
-        //    => await _roleManager.DeleteAsync(new IdentityRole(role));
-
-
         public Task HardUpdate(string id, User model)
         {
             if (!_context.Users.Any(u => id == u.Id))

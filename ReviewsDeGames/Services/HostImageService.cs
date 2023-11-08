@@ -5,28 +5,11 @@ using ReviewsDeGames.Models;
 
 namespace ReviewsDeGames.Services
 {
-    public interface IHostImageService
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="image"></param>
-        /// <returns></returns>
-        public Task<string> Write(byte[] image, string filename, string userId, DateOnly date);
-        /// <summary>
-        /// Transforma <paramref name="filename"/> em um nome único
-        /// </summary>
-        /// <param name="filename"></param>
-        /// <returns></returns>
-        public string UniqueName(string filename);
-        public void Delete(string filename, string userId, DateOnly date);
 
-    }
-
-  
 
     public class HostImageService : IHostImageService
     {
+        ///Separador entre nome original da imagem e cadeia de caracteres únicas
         public const char UniqueNameSeparator = '-';
         private readonly IWebHostEnvironment _environment;
 

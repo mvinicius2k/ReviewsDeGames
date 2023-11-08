@@ -7,7 +7,9 @@ namespace ReviewsDeGames.Validators
 {
     public class UserVoteValidator : AbstractValidator<UserVoteRequestDto>
     {
-
+        /// <summary>
+        /// Verifica se o post existe
+        /// </summary>
         public UserVoteValidator(IDescribesService describes, IPostRepository posts)
         {
             RuleFor(uv => uv.PostId)

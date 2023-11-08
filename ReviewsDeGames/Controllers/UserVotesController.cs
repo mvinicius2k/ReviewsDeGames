@@ -39,10 +39,21 @@ namespace ReviewsDeGames.Controllers
             _validator = validator;
         }
 
+        /// <summary>
+        /// Obtém uma consulta com base na query OData passada pela url
+        /// </summary>
+        /// <response code="200">Sucesso</response>
         [Route(ActionGet), HttpGet, EnableQuery]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IQueryable<UserVote> Get()
             => _votes.GetQuery();
 
+        /// <summary>
+        /// Adiciona ou altera o voto do usuário logado no post passado
+        /// </summary>
+        /// <response code="201">Sucesso se o voto foi adicionado</response>
+        /// <response code="200">Sucesso se o voto foi alterado</response>
+        /// <response code="422">Algum dado inválido no modelo</response>
         [HttpPut, Route(ActionVote), Authorize]
         public async Task<IActionResult> Vote(UserVoteRequestDto dto)
         {
@@ -50,14 +61,16 @@ namespace ReviewsDeGames.Controllers
             var validation = await _validator.ValidateAsync(dto);
             if (!validation.IsValid)
             {
+
                 validation.AddToModelState(ModelState);
                 return UnprocessableEntity(ModelState);
             }
 
             var vote = _mapper.Map<UserVote>(dto);
-            vote.Value = Math.Clamp(vote.Value, MinScore, MaxScore);
+            vote.Value = Math.Clamp(vote.Value, MinScore, MaxScore); //Obtendo um valor entre 0 e 10
             vote.UserId = loggedUserId;
 
+            //Retornando resposta com base na existência ou não de um voto já registrado
             var exists = (await _votes.GetById(vote.GetId())) != null;
             if (exists)
             {
@@ -67,9 +80,15 @@ namespace ReviewsDeGames.Controllers
             else
             {
                 await _votes.Create(vote);
-                return CreatedAtAction(ActionVote,vote);
+                return CreatedAtAction(ActionVote, vote);
             }
         }
+
+        /// <summary>
+        /// Remove o voto do post
+        /// </summary>
+        /// <response code="200">Sucesso</response>
+        /// <response code="404">Se o post não existe</response>
         [HttpDelete, Route(ActionUnvote), Authorize]
         public async Task<IActionResult> Unvote([FromRoute(Name = UnvoteRoutePostId)] int postId)
         {

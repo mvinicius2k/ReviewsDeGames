@@ -88,6 +88,11 @@ namespace ReviewsDeGames.Helpers
             return services;
         }
 
+        /// <summary>
+        /// Aplica operações elementares no database em si
+        /// </summary>
+        /// <param name="restart">Deleta e cria novamente o database se <see langword="true"/></param>
+        /// <param name="seed">Cria entidades padrão no sistema</param>
         public static void AwakeDB(this WebApplication app, bool seed, bool restart)
         {
             if (!(restart || seed))
@@ -102,6 +107,12 @@ namespace ReviewsDeGames.Helpers
             }
         }
 
+        /// <summary>
+        /// Substitui substrings numa string com base em tudo que fica entre chaves
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public static string Placeholder(this string str, params string[] args)
         {
             var pattern = @"\{([^}]*)\}";
@@ -128,6 +139,7 @@ namespace ReviewsDeGames.Helpers
 
         #region Libs
         
+        //Extensão de validação para analizar URL de imagens 
         public static IRuleBuilderOptions<T, string> SupportedImageUrl<T>(this IRuleBuilder<T, string> ruleBuilder, IEnumerable<string> supportedExtensions)
         {
             return ruleBuilder.Must(url =>

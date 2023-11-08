@@ -4,6 +4,9 @@ using ReviewsDeGames.Models;
 
 namespace ReviewsDeGames.Helpers
 {
+    /// <summary>
+    /// Constantes e valores universais do sistema
+    /// </summary>
     public static class Values
     {
         public const string ODataPrefixRoute = "odata";
