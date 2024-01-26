@@ -6,6 +6,7 @@ using ReviewsDeGames;
 using ReviewsDeGames.Database;
 using ReviewsDeGames.Helpers;
 using Serilog;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -16,6 +17,12 @@ const bool RestartDb = false;
 const bool UseTestDb = false;
 #endregion
 
+#if DEBUG
+
+while (!Debugger.IsAttached)
+    Thread.Sleep(100);
+
+#endif
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +33,7 @@ builder.Services.AddSwaggerGen(opt =>
 {
     opt.ResolveConflictingActions(x => x.First());
 
-    //Ativando leitura de comentários por parte do Swashbuckle 
+    //Ativando leitura de comentï¿½rios por parte do Swashbuckle 
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     opt.IncludeXmlComments(xmlPath);
@@ -61,7 +68,7 @@ builder.Services
     });
 
 
-//Meus serviços
+//Meus serviï¿½os
 builder.Services.AddRepositories();
 builder.Services.AddValidations();
 builder.Services.AddGeneralServices();

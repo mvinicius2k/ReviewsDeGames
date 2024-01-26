@@ -11,12 +11,12 @@ COPY ["ReviewsDeGames/ReviewsDeGames.csproj", "ReviewsDeGames/"]
 RUN dotnet restore "ReviewsDeGames/ReviewsDeGames.csproj"
 COPY . .
 WORKDIR "/src/ReviewsDeGames"
-RUN dotnet build "ReviewsDeGames.csproj" -c Release -o /app/build
+RUN dotnet build "ReviewsDeGames.csproj" -c Debug -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ReviewsDeGames.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "ReviewsDeGames.csproj" -c Debug -o /app/publish /p:UseAppHost=false
 
-##Descomente este bloco para aplicar o update de migração
+##Descomente este bloco para aplicar o update de migraï¿½ï¿½o
 #RUN dotnet tool install --global dotnet-ef
 #ENV PATH="$PATH:/root/.dotnet/tools"
 #RUN dotnet ef database update
